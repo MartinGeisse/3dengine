@@ -23,17 +23,18 @@ const int triangleVertexIndices[triangleCount][3] = {
 };
 
 Transform3 playerTransform;
-
-Vector2 transformedAndProjectedVertices[vertexCount];
+static Transform3 inversePlayerTransform;
+static Vector2 transformedAndProjectedVertices[vertexCount];
 
 void render() {
+    inversePlayerTransform = playerTransform.getInverse();
     ALLEGRO_COLOR wireframeColor;
     wireframeColor.r = 1.0f;
     wireframeColor.g = 0.0f;
     wireframeColor.b = 0.0f;
     wireframeColor.a = 1.0f;
     for (int i = 0; i < vertexCount; i++) {
-        Vector3 v = playerTransform * vertices[i];
+        Vector3 v = inversePlayerTransform * vertices[i];
         transformedAndProjectedVertices[i] = Vector2(HALF_SCREEN_WIDTH + v.x / v.z * FOV_UNIT,
             HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
     }
