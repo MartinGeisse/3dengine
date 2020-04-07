@@ -1,13 +1,18 @@
 
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
+#include "Vector2.h"
+#include "Vector3.h"
 #include "engine.h"
 
 const int vertexCount = 4;
 
 const Vector3 vertices[vertexCount] = {
-    Vector3(-0.5, -0.5, 1),
-    Vector3(+0.5, -0.5, 1),
-    Vector3(+0.5, +0.5, 1),
-    Vector3(-0.5, +0.5, 1)
+    Vector3(-0.3, -0.3, 1),
+    Vector3(+0.3, -0.3, 1),
+    Vector3(+0.3, +0.3, 1),
+    Vector3(-0.3, +0.3, 1)
 };
 
 const int triangleCount = 2;
@@ -17,7 +22,31 @@ const int triangleVertexIndices[triangleCount][3] = {
     0, 2, 3
 };
 
-Vector3 transformedVertices[vertexCount];
-
 Transform3 playerTransform;
 
+Vector2 transformedAndProjectedVertices[vertexCount];
+
+void render() {
+    ALLEGRO_COLOR wireframeColor;
+    wireframeColor.r = 1.0f;
+    wireframeColor.g = 0.0f;
+    wireframeColor.b = 0.0f;
+    wireframeColor.a = 1.0f;
+    for (int i = 0; i < vertexCount; i++) {
+        Vector3 v = playerTransform * vertices[i];
+        transformedAndProjectedVertices[i] = Vector2(HALF_SCREEN_WIDTH + v.x / v.z * FOV_UNIT,
+            HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
+    }
+    for (int i = 0; i < triangleCount; i++) {
+        al_draw_triangle(
+            transformedAndProjectedVertices[triangleVertexIndices[i][0]].x,
+            transformedAndProjectedVertices[triangleVertexIndices[i][0]].y,
+            transformedAndProjectedVertices[triangleVertexIndices[i][1]].x,
+            transformedAndProjectedVertices[triangleVertexIndices[i][1]].y,
+            transformedAndProjectedVertices[triangleVertexIndices[i][2]].x,
+            transformedAndProjectedVertices[triangleVertexIndices[i][2]].y,
+            wireframeColor,
+            1.0f
+        );
+    }
+}
