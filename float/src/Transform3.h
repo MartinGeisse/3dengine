@@ -18,7 +18,12 @@ Vector3 operator*(const Transform3 &a, const Vector3 &v);
  * so its v field indicates the position of the model origin in world coordinates, i.e. "the position of the object".
  * We also use a Transform3 to indicate the position and orientation of the player, so the same rule applies there.
  *
- * During rendering, we need the reverse transform for the player to obtain the world-to-eye transform.
+ * To transform a difference vector, just take the matrix from this transform and multiply it with the difference
+ * vector, ignoring the v field of this transform.
+ *
+ * During rendering, we need the reverse transform for the player to obtain the world-to-eye transform. While it may
+ * seem at first that using a reverse transform for the player will save the inverting step, we need the forward
+ * transform for movement so inversion just happens at another place.
  */
 struct Transform3 {
 
@@ -29,6 +34,11 @@ struct Transform3 {
     }
 
     Transform3(const Transform3 &other): m(other.m), v(other.v) {
+    }
+
+    Transform3 getInverse() {
+        Matrix3 i = m.getInverse();
+        return Transform3(i, i * -v);
     }
 
     void print() {

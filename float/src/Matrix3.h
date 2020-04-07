@@ -32,11 +32,9 @@ struct Matrix3 {
             - m13 * m22 * m31 - m11 * m23 * m32 - m12 * m21 * m33;
     }
 
-    Matrix3 getInverted() {
+    Matrix3 getInverse() {
         float a = 1.0f / determinant();
         return Matrix3(
-
-        TODO check
 
             a * (m22 * m33 - m23 * m32),
             a * (m13 * m32 - m12 * m33),

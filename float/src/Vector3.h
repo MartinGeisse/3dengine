@@ -6,6 +6,7 @@
 #include <math.h>
 
 struct Vector3;
+Vector3 operator-(const Vector3 &a);
 Vector3 operator+(const Vector3 &a, const Vector3 &b);
 void operator+=(Vector3 &a, const Vector3 &b);
 Vector3 operator-(const Vector3 &a, const Vector3 &b);
@@ -50,6 +51,10 @@ struct Vector3 {
     }
 
 };
+
+Vector3 operator-(const Vector3 &a) {
+    return Vector3(-a.x, -a.y, -a.z);
+}
 
 Vector3 operator+(const Vector3 &a, const Vector3 &b) {
     return Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
