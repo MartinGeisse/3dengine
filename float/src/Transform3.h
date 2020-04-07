@@ -30,18 +30,21 @@ struct Transform3 {
     Matrix3 m;
     Vector3 v;
 
-    Transform3(const Matrix3 &m, const Vector3 &v): m(m), v(v) {
+    inline Transform3() {
     }
 
-    Transform3(const Transform3 &other): m(other.m), v(other.v) {
+    inline Transform3(const Matrix3 &m, const Vector3 &v): m(m), v(v) {
     }
 
-    Transform3 getInverse() {
+    inline Transform3(const Transform3 &other): m(other.m), v(other.v) {
+    }
+
+    inline Transform3 getInverse() {
         Matrix3 i = m.getInverse();
         return Transform3(i, i * -v);
     }
 
-    void print() {
+    inline void print() {
         printf("Transform(");
         m.print();
         printf(", ");
@@ -51,15 +54,15 @@ struct Transform3 {
 
 };
 
-Transform3 operator*(const Transform3 &a, const Transform3 &b) {
+inline Transform3 operator*(const Transform3 &a, const Transform3 &b) {
     return Transform3(a.m * b.m, a.m * b.v + a.v);
 }
 
-void operator*=(Transform3 &a, const Transform3 &b) {
+inline void operator*=(Transform3 &a, const Transform3 &b) {
     a = a * b;
 }
 
-Vector3 operator*(const Transform3 &a, const Vector3 &v) {
+inline Vector3 operator*(const Transform3 &a, const Vector3 &v) {
     return a.m * v + a.v;
 }
 

@@ -17,22 +17,25 @@ struct Matrix3 {
 
     float m11, m12, m13, m21, m22, m23, m31, m32, m33;
 
-    Matrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33):
+    inline Matrix3() : m11(1), m12(0), m13(0), m21(0), m22(1), m23(0), m31(0), m32(0), m33(1) {
+    }
+
+    inline Matrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33):
         m11(m11), m12(m12), m13(m13), m21(m21), m22(m22), m23(m23), m31(m31), m32(m32), m33(m33) {
     }
 
-    Matrix3(const Matrix3 &other):
+    inline Matrix3(const Matrix3 &other):
         m11(other.m11), m12(other.m12), m13(other.m13),
         m21(other.m21), m22(other.m22), m23(other.m23),
         m31(other.m31), m32(other.m32), m33(other.m33) {
     }
 
-    float determinant() {
+    inline float determinant() {
         return m11 * m22 * m33 + m12 * m23 * m31 + m13 * m21 * m32
             - m13 * m22 * m31 - m11 * m23 * m32 - m12 * m21 * m33;
     }
 
-    Matrix3 getInverse() {
+    inline Matrix3 getInverse() {
         float a = 1.0f / determinant();
         return Matrix3(
 
@@ -51,13 +54,13 @@ struct Matrix3 {
         );
     }
 
-    void print() {
+    inline void print() {
         printf("Matrix3(%f, %f, %f; %f, %f, %f; %f, %f, %f)", m11, m12, m13, m21, m22, m23, m31, m32, m33);
     }
 
 };
 
-Matrix3 operator*(const Matrix3 &a, const Matrix3 &b) {
+inline Matrix3 operator*(const Matrix3 &a, const Matrix3 &b) {
     return Matrix3(
 
         a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31,
@@ -75,11 +78,11 @@ Matrix3 operator*(const Matrix3 &a, const Matrix3 &b) {
     );
 }
 
-void operator*=(Matrix3 &a, const Matrix3 &b) {
+inline void operator*=(Matrix3 &a, const Matrix3 &b) {
     a = a * b;
 }
 
-Vector3 operator*(const Matrix3 &a, const Vector3 &v) {
+inline Vector3 operator*(const Matrix3 &a, const Vector3 &v) {
     return Vector3(
         a.m11 * v.x + a.m12 * v.y + a.m13 * v.z,
         a.m21 * v.x + a.m22 * v.y + a.m23 * v.z,

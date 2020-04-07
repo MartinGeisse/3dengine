@@ -11,22 +11,22 @@ struct Plane3 {
 
     float a, b, c, d;
 
-    Plane3(float a, float b, float c, float d): a(a), b(b), c(c), d(d) {
+    inline Plane3(float a, float b, float c, float d): a(a), b(b), c(c), d(d) {
     }
 
-    Plane3(const Plane3 &other): a(other.a), b(other.b), c(other.c), d(other.d) {
+    inline Plane3(const Plane3 &other): a(other.a), b(other.b), c(other.c), d(other.d) {
     }
 
-    float getScale() {
+    inline float getScale() {
         return sqrtf(a * a + b * b + c * c);
     }
 
-    Plane3 getNormalized() {
+    inline Plane3 getNormalized() {
         float q = 1.0f / getScale();
         return Plane3(a * q, b * q, c * q, d * q);
     }
 
-    void normalize() {
+    inline void normalize() {
         float q = 1.0f / getScale();
         a *= q;
         b *= q;
@@ -34,11 +34,11 @@ struct Plane3 {
         d *= q;
     }
 
-    float evaluate(const Vector3 &v) {
+    inline float evaluate(const Vector3 &v) {
         return a * v.x + b * v.y + c * v.z + d;
     }
 
-    void print() {
+    inline void print() {
         printf("Plane3(%f, %f, %f, %f)", a, b, c, d);
     }
 
