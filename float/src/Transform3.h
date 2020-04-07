@@ -13,6 +13,13 @@ Transform3 operator*(const Transform3 &a, const Transform3 &b);
 void operator*=(Transform3 &a, const Transform3 &b);
 Vector3 operator*(const Transform3 &a, const Vector3 &v);
 
+/**
+ * Transform3 are used as model-to-world transforms (actually, will be used once transformable objects are implemented),
+ * so its v field indicates the position of the model origin in world coordinates, i.e. "the position of the object".
+ * We also use a Transform3 to indicate the position and orientation of the player, so the same rule applies there.
+ *
+ * During rendering, we need the reverse transform for the player to obtain the world-to-eye transform.
+ */
 struct Transform3 {
 
     Matrix3 m;

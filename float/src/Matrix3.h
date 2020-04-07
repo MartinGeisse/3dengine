@@ -27,6 +27,32 @@ struct Matrix3 {
         m31(other.m31), m32(other.m32), m33(other.m33) {
     }
 
+    float determinant() {
+        return m11 * m22 * m33 + m12 * m23 * m31 + m13 * m21 * m32
+            - m13 * m22 * m31 - m11 * m23 * m32 - m12 * m21 * m33;
+    }
+
+    Matrix3 getInverted() {
+        float a = 1.0f / determinant();
+        return Matrix3(
+
+        TODO check
+
+            a * (m22 * m33 - m23 * m32),
+            a * (m13 * m32 - m12 * m33),
+            a * (m12 * m23 - m13 * m22),
+
+            a * (m23 * m31 - m21 * m33),
+            a * (m11 * m33 - m13 * m31),
+            a * (m13 * m21 - m11 * m23),
+
+            a * (m21 * m32 - m22 * m31),
+            a * (m12 * m31 - m11 * m32),
+            a * (m11 * m22 - m12 * m21)
+
+        );
+    }
+
     void print() {
         printf("Matrix3(%f, %f, %f; %f, %f, %f; %f, %f, %f)", m11, m12, m13, m21, m22, m23, m31, m32, m33);
     }
