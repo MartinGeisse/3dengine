@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "vector3.h"
+#include "Vector3.h"
 
 struct Matrix3;
 
@@ -46,7 +46,7 @@ Matrix3 operator*(const Matrix3 &a, const Matrix3 &b) {
 
         a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31,
         a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32,
-        a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33,
+        a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33
 
     );
 }
@@ -59,7 +59,7 @@ Vector3 operator*(const Matrix3 &a, const Vector3 &v) {
     return Vector3(
         a.m11 * v.x + a.m12 * v.y + a.m13 * v.z,
         a.m21 * v.x + a.m22 * v.y + a.m23 * v.z,
-        a.m31 * v.x + a.m32 * v.y + a.m33 * v.z,
+        a.m31 * v.x + a.m32 * v.y + a.m33 * v.z
     );
 }
 

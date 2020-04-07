@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "vector3.h"
+#include "Vector3.h"
 
 struct Plane3 {
 

@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <math.h>
 
-struct Transform3;
+#include "Matrix3.h"
+#include "Vector3.h"
 
+struct Transform3;
 Transform3 operator*(const Transform3 &a, const Transform3 &b);
 void operator*=(Transform3 &a, const Transform3 &b);
 Vector3 operator*(const Transform3 &a, const Vector3 &v);
