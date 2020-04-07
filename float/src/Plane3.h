@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "vector3.h"
+
 struct Plane3 {
 
     float a, b, c, d;
