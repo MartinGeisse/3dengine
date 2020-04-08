@@ -14,6 +14,10 @@ Vector3 vertices[maxVertices];
 int vertexIndexCount = 0;
 int vertexIndices[maxVertexIndices];
 
+// polygons
+int polygonCount = 0;
+Polygon polygons[maxPolygons];
+
 // sectors
 int sectorCount = 0;
 Sector sectors[maxSectors];
@@ -41,10 +45,31 @@ static void renderLine(int vertexIndex1, int vertexIndex2) {
 static void renderSector(int sectorIndex) {
     Sector *sector = sectors + sectorIndex;
     int *sectorVertexIndices = vertexIndices + sector->vertexIndexStart;
+    Polygon *polygon = polygons + sector->polygonStart;
+
+    // draw solid polygons
+    for (int i = 0; i < sector->solidPolygonCount; i++) {
+        for (int j = 2; j < polygon->vertexCount; j++) {
+            al_draw_filled_triangle(
+                transformedAndProjectedVertices[sectorVertexIndices[0]].x,
+                transformedAndProjectedVertices[sectorVertexIndices[0]].y,
+                transformedAndProjectedVertices[sectorVertexIndices[j - 1]].x,
+                transformedAndProjectedVertices[sectorVertexIndices[j - 1]].y,
+                transformedAndProjectedVertices[sectorVertexIndices[j]].x,
+                transformedAndProjectedVertices[sectorVertexIndices[j]].y,
+                splitLineColor
+            );
+        }
+        sectorVertexIndices += polygon->vertexCount;
+        polygon++;
+    }
+
+    // draw lines
     for (int i = 0; i < sector->lineCount; i++) {
         renderLine(sectorVertexIndices[0], sectorVertexIndices[1]);
         sectorVertexIndices += 2;
     }
+
 }
 
 void render() {
