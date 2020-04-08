@@ -25,8 +25,14 @@ void addTriangle(int index0, int index1, int index2) {
 }
 
 void addQuad(int index0, int index1, int index2, int index3) {
-    addTriangle(index0, index1, index2);
-    addTriangle(index0, index2, index3);
+    primitives[primitiveCount][0] = vertexIndexCount;
+    primitives[primitiveCount][1] = 4;
+    primitiveCount++;
+    vertexIndices[vertexIndexCount]  = index0;
+    vertexIndices[vertexIndexCount + 1]  = index1;
+    vertexIndices[vertexIndexCount + 2]  = index2;
+    vertexIndices[vertexIndexCount + 3]  = index3;
+    vertexIndexCount += 4;
 }
 
 void extendQuadStrip(int index4, int index5) {
