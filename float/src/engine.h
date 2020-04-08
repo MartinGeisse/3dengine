@@ -19,6 +19,9 @@ struct Polygon {
     // number of vertices
     int vertexCount;
 
+    // For portals, this is the index of the target sector. For solid polygons, it is the color.
+    int targetSectorOrColor;
+
 };
 
 struct Sector {
