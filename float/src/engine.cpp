@@ -19,26 +19,19 @@ static Vector2 transformedAndProjectedVertices[maxVertices];
 static ALLEGRO_COLOR wireframeColor;
 static ALLEGRO_COLOR splitLineColor;
 
-static void drawTriangleSplitLines(int x1, int y1, int x2, int y2, int x3, int y3, int splitDepth) {
-    int x12 = (x1 + x2) / 2;
-    int x23 = (x2 + x3) / 2;
-    int x31 = (x3 + x1) / 2;
-    int y12 = (y1 + y2) / 2;
-    int y23 = (y2 + y3) / 2;
-    int y31 = (y3 + y1) / 2;
+static void drawTriangleSplitLines(float x1, float y1, float x2, float y2, float x3, float y3, int splitDepth) {
+    float x12 = (x1 + x2) / 2.0f;
+    float x23 = (x2 + x3) / 2.0f;
+    float x31 = (x3 + x1) / 2.0f;
+    float y12 = (y1 + y2) / 2.0f;
+    float y23 = (y2 + y3) / 2.0f;
+    float y31 = (y3 + y1) / 2.0f;
     al_draw_triangle(x12, y12, x23, y23, x31, y31, splitLineColor, 1.0f);
     splitDepth--;
     if (splitDepth > 0) {
         drawTriangleSplitLines(x1, y1, x12, y12, x31, y31, splitDepth);
         drawTriangleSplitLines(x2, y2, x12, y12, x23, y23, splitDepth);
         drawTriangleSplitLines(x3, y3, x23, y23, x31, y31, splitDepth);
-    }
-}
-
-static void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, int splitDepth) {
-    al_draw_triangle(x1, y1, x2, y2, x3, y3, wireframeColor, 1.0f);
-    if (splitDepth > 0) {
-        drawTriangleSplitLines(x1, y1, x2, y2, x3, y3, splitDepth);
     }
 }
 
@@ -65,16 +58,46 @@ void render() {
         int *thisPrimitiveVertexIndices = vertexIndices + thisPrimitive[0];
         int thisPrimitiveVertexCount = thisPrimitive[1];
 
+        // draw outline
+        for (int j = 1; j < thisPrimitiveVertexCount; j++) {
+            al_draw_line(
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].x,
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].y,
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].x,
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].y,
+                wireframeColor, 1.0f
+            );
+        }
+        al_draw_line(
+            transformedAndProjectedVertices[thisPrimitiveVertexIndices[thisPrimitiveVertexCount - 1]].x,
+            transformedAndProjectedVertices[thisPrimitiveVertexIndices[thisPrimitiveVertexCount - 1]].y,
+            transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].x,
+            transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].y,
+            wireframeColor, 1.0f
+        );
+
+        // draw split lines between triangle fan segments
+        for (int j = 2; j < thisPrimitiveVertexCount - 1; j++) {
+            al_draw_line(
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].x,
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].y,
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].x,
+                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].y,
+                splitLineColor, 1.0f
+            );
+        }
+
+        // draw sub-division triangles
         for (int j = 2; j < thisPrimitiveVertexCount; j++) {
-            drawTriangle(
+            drawTriangleSplitLines(
                 transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].x,
                 transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].y,
                 transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].x,
                 transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].y,
                 transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].x,
                 transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].y,
-                2
-            );
+                1);
         }
+
     }
 }
