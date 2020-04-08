@@ -25,7 +25,7 @@ void addSector() {
     sectorCount++;
 }
 
-void addPolygon4(int index0, int index1, int index2, int index3) {
+void addPolygon4(int index0, int index1, int index2, int index3, int targetSectorOrColor) {
 
     // add vertex indices to the vertex index table
     vertexIndices[vertexIndexCount] = index0;
@@ -36,6 +36,7 @@ void addPolygon4(int index0, int index1, int index2, int index3) {
 
     // add polygon to the polygon table
     polygons[polygonCount].vertexCount = 4;
+    polygons[polygonCount].targetSectorOrColor = targetSectorOrColor;
     polygonCount++;
 
     // add polygon to the sector
@@ -83,24 +84,24 @@ void addCubeLines(int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7
 void buildLevel() {
 
     addVertex(-1, -1, -1); // 0
-    addVertex(-1, -1, +2); // 1
+    addVertex(-1, -1, +3); // 1
     addVertex(+1, -1, +1); // 2
     addVertex(+1, -1, -1); // 3
     addVertex(-1, +1, -1); // 4
-    addVertex(-1, +1, +2); // 5
+    addVertex(-1, +1, +3); // 5
     addVertex(+1, +1, +1); // 6
     addVertex(+1, +1, -1); // 7
 
     addSector();
-    addPolygon4(1, 2, 6, 5);
+    addPolygon4(1, 2, 6, 5, 1);
     finishPortals();
-    addPolygon4(0, 1, 2, 3);
+    addPolygon4(0, 1, 2, 3, 4);
     addCubeLines(0, 1, 2, 3, 4, 5, 6, 7);
 
-    addVertex(+2, -1, +2); // 8
-    addVertex(+2, -1, +1); // 9
-    addVertex(+2, +1, +2); // 10
-    addVertex(+2, +1, +1); // 11
+    addVertex(+3, -1, +3); // 8
+    addVertex(+3, -1, +1); // 9
+    addVertex(+3, +1, +3); // 10
+    addVertex(+3, +1, +1); // 11
 
     addSector();
     addCubeLines(1, 8, 9, 2, 5, 10, 11, 6);
