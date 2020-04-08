@@ -6,37 +6,50 @@
 #include "Vector3.h"
 #include "engine.h"
 
+// vertices
 int vertexCount = 0;
 Vector3 vertices[maxVertices];
+
+// vertex indices (primitives use this table to share vertices since they are expensive to transform)
 int vertexIndexCount = 0;
 int vertexIndices[maxVertexIndices];
-int primitiveCount = 0;
-int primitives[maxPrimitives][2];
 
+// sectors
+int sectorCount = 0;
+Sector sectors[maxSectors];
+
+// player
 Transform3 playerTransform;
+int playerSectorIndex = 0;
+
+// internal data
 static Transform3 inversePlayerTransform;
 static Vector2 transformedAndProjectedVertices[maxVertices];
 static ALLEGRO_COLOR wireframeColor;
 static ALLEGRO_COLOR splitLineColor;
 
-static void drawTriangleSplitLines(float x1, float y1, float x2, float y2, float x3, float y3, int splitDepth) {
-    float x12 = (x1 + x2) / 2.0f;
-    float x23 = (x2 + x3) / 2.0f;
-    float x31 = (x3 + x1) / 2.0f;
-    float y12 = (y1 + y2) / 2.0f;
-    float y23 = (y2 + y3) / 2.0f;
-    float y31 = (y3 + y1) / 2.0f;
-    al_draw_triangle(x12, y12, x23, y23, x31, y31, splitLineColor, 1.0f);
-    splitDepth--;
-    if (splitDepth > 0) {
-        drawTriangleSplitLines(x1, y1, x12, y12, x31, y31, splitDepth);
-        drawTriangleSplitLines(x2, y2, x12, y12, x23, y23, splitDepth);
-        drawTriangleSplitLines(x3, y3, x23, y23, x31, y31, splitDepth);
+static void renderLine(int vertexIndex1, int vertexIndex2) {
+    al_draw_line(
+        transformedAndProjectedVertices[vertexIndex1].x,
+        transformedAndProjectedVertices[vertexIndex1].y,
+        transformedAndProjectedVertices[vertexIndex2].x,
+        transformedAndProjectedVertices[vertexIndex2].y,
+        wireframeColor, 1.0f
+    );
+}
+
+static void renderSector(int sectorIndex) {
+    Sector *sector = sectors + sectorIndex;
+    int *sectorVertexIndices = vertexIndices + sector->vertexIndexStart;
+    for (int i = 0; i < sector->lineCount; i++) {
+        renderLine(sectorVertexIndices[0], sectorVertexIndices[1]);
+        sectorVertexIndices += 2;
     }
 }
 
 void render() {
 
+    // initialize (might go into a one-time initialization)
     wireframeColor.r = 0.0f;
     wireframeColor.g = 1.0f;
     wireframeColor.b = 0.0f;
@@ -46,6 +59,7 @@ void render() {
     splitLineColor.b = 0.0f;
     splitLineColor.a = 1.0f;
 
+    // transform all vertices
     inversePlayerTransform = playerTransform.getInverse();
     for (int i = 0; i < vertexCount; i++) {
         Vector3 v = inversePlayerTransform * vertices[i];
@@ -53,51 +67,7 @@ void render() {
             HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
     }
 
-    for (int i = 0; i < primitiveCount; i++) {
-        int *thisPrimitive = primitives[i];
-        int *thisPrimitiveVertexIndices = vertexIndices + thisPrimitive[0];
-        int thisPrimitiveVertexCount = thisPrimitive[1];
+    // render
+    renderSector(playerSectorIndex);
 
-        // draw outline
-        for (int j = 1; j < thisPrimitiveVertexCount; j++) {
-            al_draw_line(
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].y,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].y,
-                wireframeColor, 1.0f
-            );
-        }
-        al_draw_line(
-            transformedAndProjectedVertices[thisPrimitiveVertexIndices[thisPrimitiveVertexCount - 1]].x,
-            transformedAndProjectedVertices[thisPrimitiveVertexIndices[thisPrimitiveVertexCount - 1]].y,
-            transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].x,
-            transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].y,
-            wireframeColor, 1.0f
-        );
-
-        // draw split lines between triangle fan segments
-        for (int j = 2; j < thisPrimitiveVertexCount - 1; j++) {
-            al_draw_line(
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].y,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].y,
-                splitLineColor, 1.0f
-            );
-        }
-
-        // draw sub-division triangles
-        for (int j = 2; j < thisPrimitiveVertexCount; j++) {
-            drawTriangleSplitLines(
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[0]].y,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j - 1]].y,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].x,
-                transformedAndProjectedVertices[thisPrimitiveVertexIndices[j]].y,
-                1);
-        }
-
-    }
 }
