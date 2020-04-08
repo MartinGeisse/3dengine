@@ -30,7 +30,7 @@ struct Sector {
     // index of the first polygon in the polygon table; other polygons must follow
     int polygonStart;
 
-    // number of portal polygons
+    // number of portal polygons. Note: winding must be counter-clockwise.
     int portalCount;
 
     // number of solid (colored) polygons

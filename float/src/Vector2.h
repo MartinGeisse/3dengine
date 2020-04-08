@@ -51,6 +51,12 @@ struct Vector2 {
         printf("(%f, %f)", x, y);
     }
 
+    inline void rotateLeft90() {
+        int temp = x;
+        x = -y;
+        y = temp;
+    }
+
 };
 
 inline Vector2 operator-(const Vector2 &a) {

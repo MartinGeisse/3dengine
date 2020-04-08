@@ -11,6 +11,9 @@ struct Plane2 {
 
     float a, b, c;
 
+    inline Plane2() {
+    }
+
     inline Plane2(float a, float b, float c): a(a), b(b), c(c) {
     }
 
@@ -42,5 +45,12 @@ struct Plane2 {
     }
 
 };
+
+inline Plane2 buildPlane2FromPoints(Vector2 a, Vector2 b) {
+    Vector2 n = b - a;
+    n.rotateLeft90();
+    n.normalize();
+    return Plane2(n.x, n.y, -(n * a));
+}
 
 #endif

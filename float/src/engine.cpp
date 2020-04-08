@@ -4,6 +4,7 @@
 
 #include "Vector2.h"
 #include "Vector3.h"
+#include "Plane2.h"
 #include "engine.h"
 
 // vertices
@@ -31,6 +32,12 @@ static Transform3 inversePlayerTransform;
 static Vector2 transformedAndProjectedVertices[maxVertices];
 static ALLEGRO_COLOR wireframeColor;
 static ALLEGRO_COLOR splitLineColor;
+
+// internal data: 2d clipping
+static const int maxClipperStackSize = 64;
+static Plane2 clipperStack[maxClipperStackSize];
+static int clipperStackStart;
+static int clipperStackEnd;
 
 static void renderLine(int vertexIndex1, int vertexIndex2) {
     al_draw_line(
@@ -98,6 +105,14 @@ void render() {
         transformedAndProjectedVertices[i] = Vector2(HALF_SCREEN_WIDTH + v.x / v.z * FOV_UNIT,
             HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
     }
+
+    // reset clipping
+    clipperStackStart = 0;
+    clipperStackEnd = 4;
+    clipperStack[0] = buildPlane2FromPoints(Vector2(100, 100), Vector2(SCREEN_WIDTH, 100));
+    clipperStack[1] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH, 100), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+    clipperStack[2] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH, SCREEN_HEIGHT), Vector2(100, SCREEN_HEIGHT));
+    clipperStack[3] = buildPlane2FromPoints(Vector2(100, SCREEN_HEIGHT), Vector2(100, 100));
 
     // render
     renderSector(playerSectorIndex);
