@@ -38,15 +38,18 @@ void extendQuadStrip(int index4, int index5) {
 
 void buildLevel() {
 
-    addVertex(-1, -1, -1);
-    addVertex(-1, -1, +1);
-    addVertex(+1, -1, +1);
-    addVertex(+1, -1, -1);
-    addVertex(-1, +1, -1);
-    addVertex(-1, +1, +1);
-    addVertex(+1, +1, +1);
-    addVertex(+1, +1, -1);
+    addVertex(-1, -1, -1); // 0
+    addVertex(-1, -1, +1); // 1
+    addVertex(+1, -1, +1); // 2
+    addVertex(+1, -1, -1); // 3
+    addVertex(-1, +1, -1); // 4
+    addVertex(-1, +1, +1); // 5
+    addVertex(+1, +1, +1); // 6
+    addVertex(+1, +1, -1); // 7
 
     addQuad(0, 1, 2, 3);
+    extendQuadStrip(7, 6);
+    extendQuadStrip(5, 4);
+    extendQuadStrip(0, 1);
 
 }
