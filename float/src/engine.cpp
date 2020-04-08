@@ -32,8 +32,8 @@ int playerSectorIndex = 0;
 
 // internal data
 static Transform3 inversePlayerTransform;
-static Vector2 transformedAndProjectedVertices[maxVertices];
-static float transformedVertexDepth[maxVertices];
+static Vector3 transformedVertices[maxVertices];
+static Vector2 projectedVertices[maxVertices]; // only valid if (z >= NEAR_Z), otherwise we must clip BEFORE projection
 static ALLEGRO_COLOR wireframeColor;
 static ALLEGRO_COLOR splitLineColor;
 
@@ -43,46 +43,12 @@ static Plane2 clipperStack[maxClipperStackSize];
 static int clipperStackStart;
 static int clipperStackEnd;
 
-static void renderLine(int vertexIndex1, int vertexIndex2) {
-    Vector2 a(transformedAndProjectedVertices[vertexIndex1]), b(transformedAndProjectedVertices[vertexIndex2]);
+// called once for all non-near vertices, and on demand for near vertices after clipping
+inline static Vector2 project(Vector3 v) {
+    return Vector2(HALF_SCREEN_WIDTH + v.x / v.z * FOV_UNIT, HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
+}
 
-    // clip against near plane
-    // TODO right now there is a simple bug in the code that produces totally wrong results
-    // TODO but after that, we have a real problem here because we cannot simply clip a line after projection -- the
-    // result will be wrong in a similar way to non-perspective-correct textures. We have to clip before the division:
-    // either in "clip space", like OpenGL, which is immediately before the division, or in eye space.
-    // -- this is probably not the same as the above "simple bug" because right now it only makes lines that intersect
-    // the near plane have the wrong length from the visible vertex towards the invisible vertex -- the line's angle
-    // should not change. In the code below, (vaz / (vbz - vaz)) produces the wrong result.
-    // --> the above "simple bug" is related. The invisible point gets reflected to the wrong side of the screen center.
-    // All this means that the main work of the projection (at least the division, but then it's complex, better the
-    // whole projection) cannot be reliably done before (near plane) clipping. This is sad because near plane clipping
-    // is the only clipping we have to do in 3d -- portal clipping could be done in 2d. Also, sharing the projected
-    // vertices becomes way more complex now. The only upside is that clipping may now help us discard a few vertices
-    // before projection.
-    // --
-    // Alternative: Since it's only about the near plane, we might do the following:
-    // - store all vertices in eye coords and after projection (easy, just takes some memory)
-    // -- might be solved by a trick: the Z coordinate is the same for both, so if z < NEAR, then it's in eye coords,
-    //    otherwise projected
-    // -- no, that won't do: If one of the vertices of a line is too near, we need BOTH of them in eye coords! So
-    //    we have to store both. Anyway,
-    // - check if fully visible or invisible WRT near plane, if so, use already projected vertices
-    // - if partially visible, clip, then project, and use those --> sounds like a plan
-    float vaz = transformedVertexDepth[vertexIndex1] - NEAR_Z;
-    float vbz = transformedVertexDepth[vertexIndex2] - NEAR_Z;
-    if (vaz < 0) {
-        if (vbz < 0) {
-            // invisible
-            return;
-        } else {
-            // point a clipped away
-            a -= (b - a) * vaz / (vbz - vaz);
-        }
-    } else if (vbz < 0) {
-        // point b clipped away
-        b -= (a - b) * vbz / (vaz - vbz);
-    } // else: fully visible WRT the near plane
+static void renderLine(Vector2 a, Vector2 b) {
 
     // clip against screen boundaries / portal boundaries
     for (int i = clipperStackStart; i < clipperStackEnd; i++) {
@@ -108,6 +74,35 @@ static void renderLine(int vertexIndex1, int vertexIndex2) {
 
 }
 
+static void renderLine(int vertexIndex1, int vertexIndex2) {
+    // For "near" vertices, we must clip against the near plane, then transform the clipped vertex. For non-near
+    // vertices, we can use the shared, already-transformed vertices. Note that if one vertex is near, we need the
+    // non-projected version of the other vertex too, to perform clipping itself.
+    float vaz = transformedVertices[vertexIndex1].z - NEAR_Z;
+    float vbz = transformedVertices[vertexIndex2].z - NEAR_Z;
+    if (vaz < 0) {
+        if (vbz < 0) {
+            // invisible
+            return;
+        } else {
+            // first point clipped away
+            Vector3 a = transformedVertices[vertexIndex1];
+            Vector3 b = transformedVertices[vertexIndex2];
+            a -= (b - a) * vaz / (vbz - vaz);
+            renderLine(project(a), projectedVertices[vertexIndex2]);
+        }
+    } else if (vbz < 0) {
+        // second point clipped away
+        Vector3 a = transformedVertices[vertexIndex1];
+        Vector3 b = transformedVertices[vertexIndex2];
+        b -= (a - b) * vbz / (vaz - vbz);
+        renderLine(projectedVertices[vertexIndex1], project(b));
+    } else {
+        // fully visible WRT the near plane, so use the shared, already-transformed vertices
+        renderLine(projectedVertices[vertexIndex1], projectedVertices[vertexIndex2]);
+    }
+}
+
 static void renderSector(int sectorIndex) {
 
     Sector *sector = sectors + sectorIndex;
@@ -127,8 +122,8 @@ static void renderSector(int sectorIndex) {
             // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
             // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
             clipperStack[clipperStackEnd] = buildPlane2FromPoints(
-                transformedAndProjectedVertices[sectorVertexIndices[j]],
-                transformedAndProjectedVertices[sectorVertexIndices[j == 0 ? polygon->vertexCount - 1 : j - 1]]
+                projectedVertices[sectorVertexIndices[j]],
+                projectedVertices[sectorVertexIndices[j == 0 ? polygon->vertexCount - 1 : j - 1]]
             );
             clipperStackEnd++;
         }
@@ -148,12 +143,12 @@ static void renderSector(int sectorIndex) {
     for (int i = 0; i < sector->solidPolygonCount; i++) {
         for (int j = 2; j < polygon->vertexCount; j++) {
             al_draw_filled_triangle(
-                transformedAndProjectedVertices[sectorVertexIndices[0]].x,
-                transformedAndProjectedVertices[sectorVertexIndices[0]].y,
-                transformedAndProjectedVertices[sectorVertexIndices[j - 1]].x,
-                transformedAndProjectedVertices[sectorVertexIndices[j - 1]].y,
-                transformedAndProjectedVertices[sectorVertexIndices[j]].x,
-                transformedAndProjectedVertices[sectorVertexIndices[j]].y,
+                projectedVertices[sectorVertexIndices[0]].x,
+                projectedVertices[sectorVertexIndices[0]].y,
+                projectedVertices[sectorVertexIndices[j - 1]].x,
+                projectedVertices[sectorVertexIndices[j - 1]].y,
+                projectedVertices[sectorVertexIndices[j]].x,
+                projectedVertices[sectorVertexIndices[j]].y,
                 splitLineColor
             );
         }
@@ -185,9 +180,10 @@ void render() {
     inversePlayerTransform = playerTransform.getInverse();
     for (int i = 0; i < vertexCount; i++) {
         Vector3 v = inversePlayerTransform * vertices[i];
-        transformedAndProjectedVertices[i] = Vector2(HALF_SCREEN_WIDTH + v.x / v.z * FOV_UNIT,
-            HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
-        transformedVertexDepth[i] = v.z;
+        transformedVertices[i] = v;
+        if (v.z >= NEAR_Z) {
+            projectedVertices[i] = project(v);
+        }
     }
 
     // reset clipping
