@@ -30,6 +30,9 @@ struct Sector {
     // index of the first polygon in the polygon table; other polygons must follow
     int polygonStart;
 
+    // number of portal polygons
+    int portalCount;
+
     // number of solid (colored) polygons
     int solidPolygonCount;
 

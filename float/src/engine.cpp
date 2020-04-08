@@ -47,6 +47,13 @@ static void renderSector(int sectorIndex) {
     int *sectorVertexIndices = vertexIndices + sector->vertexIndexStart;
     Polygon *polygon = polygons + sector->polygonStart;
 
+    // draw portals
+    for (int i = 0; i < sector->portalCount; i++) {
+        // TODO
+        sectorVertexIndices += polygon->vertexCount;
+        polygon++;
+    }
+
     // draw solid polygons
     for (int i = 0; i < sector->solidPolygonCount; i++) {
         for (int j = 2; j < polygon->vertexCount; j++) {

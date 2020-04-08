@@ -20,6 +20,7 @@ void addSector() {
     sectors[sectorCount].vertexIndexStart = vertexIndexCount;
     sectors[sectorCount].polygonStart = polygonCount;
     sectors[sectorCount].solidPolygonCount = 0;
+    sectors[sectorCount].portalCount = 0;
     sectors[sectorCount].lineCount = 0;
     sectorCount++;
 }
@@ -40,6 +41,11 @@ void addPolygon4(int index0, int index1, int index2, int index3) {
     // add polygon to the sector
     sectors[sectorCount - 1].solidPolygonCount++;
 
+}
+
+void finishPortals() {
+    sectors[sectorCount - 1].portalCount = sectors[sectorCount - 1].solidPolygonCount;
+    sectors[sectorCount - 1].solidPolygonCount = 0;
 }
 
 void addLine(int index0, int index1) {
@@ -86,6 +92,9 @@ void buildLevel() {
     addVertex(+1, +1, -1); // 7
 
     addSector();
+    addPolygon4(1, 2, 6, 5);
+    finishPortals();
+    addPolygon4(0, 1, 2, 3);
     addCubeLines(0, 1, 2, 3, 4, 5, 6, 7);
 
     addVertex(+2, -1, +2); // 8
