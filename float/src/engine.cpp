@@ -40,23 +40,58 @@ static int clipperStackStart;
 static int clipperStackEnd;
 
 static void renderLine(int vertexIndex1, int vertexIndex2) {
-    al_draw_line(
-        transformedAndProjectedVertices[vertexIndex1].x,
-        transformedAndProjectedVertices[vertexIndex1].y,
-        transformedAndProjectedVertices[vertexIndex2].x,
-        transformedAndProjectedVertices[vertexIndex2].y,
-        wireframeColor, 1.0f
-    );
+    Vector2 a(transformedAndProjectedVertices[vertexIndex1]), b(transformedAndProjectedVertices[vertexIndex2]);
+    for (int i = clipperStackStart; i < clipperStackEnd; i++) {
+        Plane2 *clipper = clipperStack + i;
+        float va = clipper->evaluate(a);
+        float vb = clipper->evaluate(b);
+        if (va < 0) {
+            if (vb < 0) {
+                // invisible
+                return;
+            } else {
+                // point a clipped away
+                a -= (b - a) * va / (vb - va);
+            }
+        } else if (vb < 0) {
+            // point b clipped away
+            b -= (a - b) * vb / (va - vb);
+        } // else: fully visible WRT this clipper
+    }
+    al_draw_line(a.x, a.y, b.x, b.y, wireframeColor, 1.0f);
 }
 
 static void renderSector(int sectorIndex) {
+
     Sector *sector = sectors + sectorIndex;
     int *sectorVertexIndices = vertexIndices + sector->vertexIndexStart;
     Polygon *polygon = polygons + sector->polygonStart;
 
     // draw portals
     for (int i = 0; i < sector->portalCount; i++) {
-        // TODO
+
+        // save current clipper stack
+        int oldClipperStackEnd = clipperStackEnd;
+
+        // add new clippers from the portal
+        // TODO merge clippers, don't just add them
+        for (int j = 0; j < polygon->vertexCount; j++) {
+            // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
+            // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
+            clipperStack[clipperStackEnd] = buildPlane2FromPoints(
+                transformedAndProjectedVertices[sectorVertexIndices[j]],
+                transformedAndProjectedVertices[sectorVertexIndices[j == 0 ? polygon->vertexCount - 1 : j - 1]]
+            );
+            clipperStackEnd++;
+        }
+
+        // render the target sector with the new clipper stack
+        renderSector(polygon->targetSectorOrColor);
+
+        // restore clipper stack
+        clipperStackEnd = oldClipperStackEnd;
+
+        // advance to the next polygon and its vertices
         sectorVertexIndices += polygon->vertexCount;
         polygon++;
     }
@@ -109,10 +144,10 @@ void render() {
     // reset clipping
     clipperStackStart = 0;
     clipperStackEnd = 4;
-    clipperStack[0] = buildPlane2FromPoints(Vector2(100, 100), Vector2(SCREEN_WIDTH, 100));
-    clipperStack[1] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH, 100), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
-    clipperStack[2] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH, SCREEN_HEIGHT), Vector2(100, SCREEN_HEIGHT));
-    clipperStack[3] = buildPlane2FromPoints(Vector2(100, SCREEN_HEIGHT), Vector2(100, 100));
+    clipperStack[0] = buildPlane2FromPoints(Vector2(0, 0), Vector2(SCREEN_WIDTH, 0));
+    clipperStack[1] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH, 0), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+    clipperStack[2] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH, SCREEN_HEIGHT), Vector2(0, SCREEN_HEIGHT));
+    clipperStack[3] = buildPlane2FromPoints(Vector2(0, SCREEN_HEIGHT), Vector2(0, 0));
 
     // render
     renderSector(playerSectorIndex);
