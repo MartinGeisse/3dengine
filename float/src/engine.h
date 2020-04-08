@@ -15,12 +15,16 @@
 #define FOV_UNIT 400
 
 const int maxVertices = 1024;
-const int maxTriangles = 1024;
+const int maxVertexIndices = 1024;
+const int maxPrimitives = 1024;
 
 extern int vertexCount;
 extern Vector3 vertices[];
-extern int triangleCount;
-extern int triangleVertexIndices[][3];
+extern int vertexIndexCount;
+extern int vertexIndices[];
+extern int primitiveCount;
+extern int primitives[][2];
+
 extern Transform3 playerTransform;
 
 void render();

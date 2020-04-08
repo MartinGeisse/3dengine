@@ -1,28 +1,27 @@
 
 #include "engine.h"
 
-int addVertex(Vector3 v) {
+void addVertex(Vector3 v) {
     if (vertexCount == maxVertices) {
         printf("too many vertices\n");
         exit(1);
     }
     vertices[vertexCount] = v;
-    int returnValue = vertexCount;
     vertexCount++;
-    return returnValue;
 }
 
-int addVertex(float x, float y, float z) {
-    return addVertex(Vector3(x, y, z));
+void addVertex(float x, float y, float z) {
+    addVertex(Vector3(x, y, z));
 }
 
-int addTriangle(int index0, int index1, int index2) {
-    triangleVertexIndices[triangleCount][0] = index0;
-    triangleVertexIndices[triangleCount][1] = index1;
-    triangleVertexIndices[triangleCount][2] = index2;
-    int returnValue = triangleCount;
-    triangleCount++;
-    return returnValue;
+void addTriangle(int index0, int index1, int index2) {
+    primitives[primitiveCount][0] = vertexIndexCount;
+    primitives[primitiveCount][1] = 3;
+    primitiveCount++;
+    vertexIndices[vertexIndexCount]  = index0;
+    vertexIndices[vertexIndexCount + 1]  = index1;
+    vertexIndices[vertexIndexCount + 2]  = index2;
+    vertexIndexCount += 3;
 }
 
 void addQuad(int index0, int index1, int index2, int index3) {
@@ -31,8 +30,8 @@ void addQuad(int index0, int index1, int index2, int index3) {
 }
 
 void extendQuadStrip(int index4, int index5) {
-    int index2 = triangleVertexIndices[triangleCount - 1][1];
-    int index3 = triangleVertexIndices[triangleCount - 1][2];
+    int index2 = vertexIndices[vertexIndexCount - 2];
+    int index3 = vertexIndices[vertexIndexCount - 1];
     addQuad(index2, index3, index4, index5);
 }
 
@@ -51,5 +50,28 @@ void buildLevel() {
     extendQuadStrip(7, 6);
     extendQuadStrip(5, 4);
     extendQuadStrip(0, 1);
+
+}
+
+void dumpLevel() {
+
+    printf("%d vertices\n", vertexCount);
+    for (int i = 0; i < vertexCount; i++) {
+        vertices[i].print();
+        printf("\n");
+    }
+    printf("\n");
+
+    printf("%d vertex indices\n", vertexIndexCount);
+    for (int i = 0; i < vertexIndexCount; i++) {
+        printf("%d, ", vertexIndices[i]);
+    }
+    printf("\n\n");
+
+    printf("%d primitives\n", primitiveCount);
+    for (int i = 0; i < primitiveCount; i++) {
+        printf("from %d, count %d\n", primitives[i][0], primitives[i][1]);
+    }
+    printf("\n");
 
 }
