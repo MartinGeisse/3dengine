@@ -6,6 +6,12 @@
 #include "Vector3.h"
 #include "engine.h"
 
+int vertexCount = 0;
+Vector3 vertices[maxVertices];
+int triangleCount = 0;
+int triangleVertexIndices[maxTriangles][3];
+
+/*
 const int vertexCount = 4;
 
 const Vector3 vertices[vertexCount] = {
@@ -21,10 +27,11 @@ const int triangleVertexIndices[triangleCount][3] = {
     0, 1, 2,
     0, 2, 3
 };
+*/
 
 Transform3 playerTransform;
 static Transform3 inversePlayerTransform;
-static Vector2 transformedAndProjectedVertices[vertexCount];
+static Vector2 transformedAndProjectedVertices[maxVertices];
 
 void render() {
     inversePlayerTransform = playerTransform.getInverse();

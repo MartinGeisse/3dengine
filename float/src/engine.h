@@ -14,10 +14,13 @@
 // inverse half-screen FOV; half the above screen size means a total FOV of 90 degrees (on that axis)
 #define FOV_UNIT 400
 
-extern const int vertexCount;
-extern const Vector3 vertices[];
-extern const int triangleCount;
-extern const int triangleVertexIndices[][3];
+const int maxVertices = 1024;
+const int maxTriangles = 1024;
+
+extern int vertexCount;
+extern Vector3 vertices[];
+extern int triangleCount;
+extern int triangleVertexIndices[][3];
 extern Transform3 playerTransform;
 
 void render();

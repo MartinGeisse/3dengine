@@ -10,6 +10,7 @@
 #include "Plane3.h"
 #include "Transform3.h"
 #include "engine.h"
+#include "level.h"
 
 #define SPEED 0.1f
 #define ROTATION 0.1f
@@ -19,6 +20,7 @@ static void moveRelative(float dx, float dy, float dz) {
 }
 
 int main() {
+    buildLevel();
 	al_init();
 	ALLEGRO_DISPLAY *display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
 	al_init_primitives_addon();
@@ -31,6 +33,9 @@ int main() {
 
         ALLEGRO_KEYBOARD_STATE keyboardState;
         al_get_keyboard_state(&keyboardState);
+        if (al_key_down(&keyboardState, ALLEGRO_KEY_ESCAPE)) {
+            break;
+        }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_D)) {
             moveRelative(SPEED, 0, 0);
         }
