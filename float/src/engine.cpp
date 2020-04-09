@@ -131,6 +131,7 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
         }
     }
     if (!anyFarVertex) {
+        currentPolygonVertexCount2 = 0;
         return;
     }
     if (anyNearVertex) {
@@ -165,6 +166,19 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
             int nextIndex = (j == currentPolygonVertexCount3 - 1 ? 0 : j + 1);
             float previousEvaluation = currentPolygonEvaluations[previousIndex];
             float nextEvaluation = currentPolygonEvaluations[nextIndex];
+
+            // we normally want to treat vertices on the clip plane as invisible, so an infinitesimal piece of polygon
+            // is treated as invisible. We have to make an exception though: A vertex on the plane with both neighbors
+            // fully visible would produce two identical split vertices. This again causes unnecessary computations.
+            // Even worse, for portals we have to handle it as a special case either here or when building the new
+            // clippers as a line between two identical points cannot define a valid clipper.
+            // Not handling it here causes followup problems when clipping against the next clipper, too.
+            if (previousEvaluation > 0 && nextEvaluation > 0 && currentEvaluation > -0.01) {
+                currentPolygonVertices3[outputVertexCount] = currentVertex;
+                outputVertexCount++;
+                continue;
+            }
+
             if (previousEvaluation > 0) {
                 currentPolygonVertices3[outputVertexCount] =
                     currentVertex - (currentPolygonBackupVertices3[previousIndex] - currentVertex) *
@@ -231,6 +245,14 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
             int nextIndex = (j == currentPolygonVertexCount2 - 1 ? 0 : j + 1);
             float previousEvaluation = currentPolygonEvaluations[previousIndex];
             float nextEvaluation = currentPolygonEvaluations[nextIndex];
+
+            // again, prevent generating two identical split vertices from a single vertex on the clipper
+            if (previousEvaluation > 0 && nextEvaluation > 0 && currentEvaluation > -0.01) {
+                currentPolygonVertices2[outputVertexCount] = currentVertex;
+                outputVertexCount++;
+                continue;
+            }
+
             if (previousEvaluation > 0) {
                 currentPolygonVertices2[outputVertexCount] =
                     currentVertex - (currentPolygonBackupVertices2[previousIndex] - currentVertex) *
@@ -245,7 +267,6 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
             }
         }
         currentPolygonVertexCount2 = outputVertexCount;
-
     }
 
 }
@@ -260,33 +281,46 @@ static void renderSector(int sectorIndex) {
 
         // clip the portal
         projectAndClipPolygon(sectorVertexIndices, polygon->vertexCount);
-        if (currentPolygonVertexCount2 != 0) {
+        if (currentPolygonVertexCount2 >= 3) {
 
-            // save current clipper stack
-            int oldClipperStackStart = clipperStackStart;
+            // Check winding (backface culling). We don't really need this, but without it we'll draw a whole sector
+            // against an "impossible" set of clippers, slowing things down.
+            int correctWinding = 1;
+            Plane2 firstSide = buildPlane2FromPoints(currentPolygonVertices2[1], currentPolygonVertices2[0]);
+            for (int j = 2; j < currentPolygonVertexCount2; j++) {
+                if (firstSide.evaluate(currentPolygonVertices2[j]) < -0.01) {
+                    correctWinding = 0;
+                    break;
+                }
+            }
+            if (correctWinding) {
 
-            // install the clipped portal as the only active clippers; protect against clipper stack overflow
-            clipperStackStart = clipperStackEnd;
-            clipperStackEnd += currentPolygonVertexCount2;
-            if (clipperStackEnd <= maxClipperStackSize) {
-                for (int j = 0; j < currentPolygonVertexCount2; j++) {
-                    // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
-                    // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
-                    clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
-                        currentPolygonVertices2[j],
-                        currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
-                    );
+                // save current clipper stack
+                int oldClipperStackStart = clipperStackStart;
+
+                // install the clipped portal as the only active clippers; protect against clipper stack overflow
+                clipperStackStart = clipperStackEnd;
+                clipperStackEnd += currentPolygonVertexCount2;
+                if (clipperStackEnd <= maxClipperStackSize) {
+                    for (int j = 0; j < currentPolygonVertexCount2; j++) {
+                        // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
+                        // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
+                        clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
+                            currentPolygonVertices2[j],
+                            currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
+                        );
+                    }
+
+                    // render the target sector with the new clipper stack
+                    renderSector(polygon->targetSectorOrColor);
+
                 }
 
-                // render the target sector with the new clipper stack
-                renderSector(polygon->targetSectorOrColor);
+                // restore clipper stack
+                clipperStackEnd = clipperStackStart;
+                clipperStackStart = oldClipperStackStart;
 
             }
-
-            // restore clipper stack
-            clipperStackEnd = clipperStackStart;
-            clipperStackStart = oldClipperStackStart;
-
         }
 
         // advance to the next polygon and its vertices
@@ -320,8 +354,6 @@ static void renderSector(int sectorIndex) {
     }
 
 }
-
-// TODO problem: infinite recursion in drawing sectors 1/0/1/0/1/...
 
 void render() {
 
