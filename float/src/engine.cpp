@@ -48,6 +48,8 @@ static int currentPolygonVertexCount3;
 static Vector3 currentPolygonVertices3[64];
 static int currentPolygonVertexCount2;
 static Vector2 currentPolygonVertices2[64];
+static Vector2 currentPolygonBackupVertices2[64];
+static float currentPolygonEvaluations[64];
 
 // called once for all non-near vertices, and on demand for near vertices after clipping
 inline static Vector2 project(Vector3 v) {
@@ -122,6 +124,56 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
     currentPolygonVertexCount2 = vertexCount;
     for (int i = 0; i < vertexCount; i++) {
         currentPolygonVertices2[i] = projectedVertices[polygonVertexIndices[i]];
+    }
+    for (int i = clipperStackStart; i < clipperStackEnd; i++) {
+        Plane2 *clipper = clipperStack + i;
+
+        // Evaluate all vertices against this clipper, and fail fast if none is visible.
+        // Also, during clipping, we read from the backup array, to handle the case that one vertex in the polygon
+        // becomes two vertices after clipping. This happens if only a single vertex is clipped away.
+        int anyVertexVisible = 0;
+        for (int j = 0; j < currentPolygonVertexCount2; j++) {
+            float evaluation = clipper->evaluate(currentPolygonVertices2[j]);
+            if (evaluation > 0) {
+                anyVertexVisible = 1;
+            }
+            currentPolygonEvaluations[j] = evaluation;
+            currentPolygonBackupVertices2[j] = currentPolygonVertices2[j];
+        }
+        if (!anyVertexVisible) {
+            currentPolygonVertexCount2 = 0;
+            return;
+        }
+
+        // clip each side
+        int outputVertexCount = 0;
+        for (int j = 0; j < currentPolygonVertexCount2; j++) {
+            Vector2 currentVertex = currentPolygonBackupVertices2[j];
+            float currentEvaluation = currentPolygonEvaluations[j];
+            if (currentEvaluation > 0) {
+                currentPolygonVertices2[outputVertexCount] = currentVertex;
+                outputVertexCount++;
+                continue;
+            }
+            int previousIndex = (j == 0 ? currentPolygonVertexCount2 - 1 : j - 1);
+            int nextIndex = (j == currentPolygonVertexCount2 - 1 ? 0 : j + 1);
+            float previousEvaluation = currentPolygonEvaluations[previousIndex];
+            float nextEvaluation = currentPolygonEvaluations[nextIndex];
+            if (previousEvaluation > 0) {
+                currentPolygonVertices2[outputVertexCount] =
+                    currentVertex - (currentPolygonBackupVertices2[previousIndex] - currentVertex) *
+                        currentEvaluation / (previousEvaluation - currentEvaluation);
+                outputVertexCount++;
+            }
+            if (nextEvaluation > 0) {
+                currentPolygonVertices2[outputVertexCount] =
+                    currentVertex - (currentPolygonBackupVertices2[nextIndex] - currentVertex) *
+                        currentEvaluation / (nextEvaluation - currentEvaluation);
+                outputVertexCount++;
+            }
+        }
+        currentPolygonVertexCount2 = outputVertexCount;
+
     }
 
 }
