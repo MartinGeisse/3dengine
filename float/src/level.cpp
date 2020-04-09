@@ -159,26 +159,3 @@ void buildLevel() {
     addCollisionPlane(0, -1, 0, 1, -1);
 
 }
-
-void dumpLevel() {
-/*
-    printf("%d vertices\n", vertexCount);
-    for (int i = 0; i < vertexCount; i++) {
-        vertices[i].print();
-        printf("\n");
-    }
-    printf("\n");
-
-    printf("%d vertex indices\n", vertexIndexCount);
-    for (int i = 0; i < vertexIndexCount; i++) {
-        printf("%d, ", vertexIndices[i]);
-    }
-    printf("\n\n");
-
-    printf("%d primitives\n", primitiveCount);
-    for (int i = 0; i < primitiveCount; i++) {
-        printf("from %d, count %d\n", primitives[i][0], primitives[i][1]);
-    }
-    printf("\n");
-*/
-}
