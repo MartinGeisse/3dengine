@@ -129,22 +129,32 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
         return;
     }
     if (anyNearVertex) {
-        // near plane clipping is needed
 
+        // near plane clipping is needed, so first make a copy of the vertices
+        currentPolygonVertexCount3 = vertexCount;
+        for (int i = 0; i < vertexCount; i++) {
+            currentPolygonVertices3[i] = transformedVertices[polygonVertexIndices[i]];
+        }
 
-    }
+        // TODO near plane clipping
 
-    // 3d near plane clipping TODO
-    currentPolygonVertexCount3 = vertexCount;
-    for (int i = 0; i < vertexCount; i++) {
-        currentPolygonVertices3[i] = transformedVertices[polygonVertexIndices[i]];
+        // project the clipped vertices
+        currentPolygonVertexCount2 = currentPolygonVertexCount3;
+        for (int i = 0; i < currentPolygonVertexCount3; i++) {
+            currentPolygonVertices2[i] = project(currentPolygonVertices3[i]);
+        }
+
+    } else {
+
+        // just copy the already projected vertices
+        currentPolygonVertexCount2 = vertexCount;
+        for (int i = 0; i < vertexCount; i++) {
+            currentPolygonVertices2[i] = projectedVertices[polygonVertexIndices[i]];
+        }
+
     }
 
     // 2d clipping against screen / portal boundaries
-    currentPolygonVertexCount2 = vertexCount;
-    for (int i = 0; i < vertexCount; i++) {
-        currentPolygonVertices2[i] = projectedVertices[polygonVertexIndices[i]];
-    }
     for (int i = clipperStackStart; i < clipperStackEnd; i++) {
         Plane2 *clipper = clipperStack + i;
 
