@@ -114,13 +114,33 @@ static void renderLine(int vertexIndex1, int vertexIndex2) {
 // fills the "currentPolygon*" data structures
 static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
 
-    // TODO
+    // First, check if near plane clipping is necessary , i.e. at least one vertex is nearer than the near plane.
+    // Also, fail fast if ALL vertices are nearer than the near plane.
+    int anyNearVertex = 0, anyFarVertex = 0;
+    for (int i = 0; i < vertexCount; i++) {
+        float z = transformedVertices[polygonVertexIndices[i]].z;
+        if (z > NEAR_Z) {
+            anyFarVertex = 1;
+        } else {
+            anyNearVertex = 1;
+        }
+    }
+    if (!anyFarVertex) {
+        return;
+    }
+    if (anyNearVertex) {
+        // near plane clipping is needed
+
+
+    }
+
+    // 3d near plane clipping TODO
     currentPolygonVertexCount3 = vertexCount;
     for (int i = 0; i < vertexCount; i++) {
         currentPolygonVertices3[i] = transformedVertices[polygonVertexIndices[i]];
     }
 
-    // TODO
+    // 2d clipping against screen / portal boundaries
     currentPolygonVertexCount2 = vertexCount;
     for (int i = 0; i < vertexCount; i++) {
         currentPolygonVertices2[i] = projectedVertices[polygonVertexIndices[i]];
