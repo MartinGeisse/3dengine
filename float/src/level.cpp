@@ -139,6 +139,8 @@ void buildLevel() {
     addCollisionPlane(vertices[8], vertices[9], vertices[11], 2);
     addCollisionPlane(0, 1, 0, 1, -1);
     addCollisionPlane(0, -1, 0, 1, -1);
+    addCollisionPlane(0, 0, 1, -1, -1);
+    addCollisionPlane(0, 0, -1, 3, -1);
 
 
     // -------------------------------------------------------------------------------
@@ -157,5 +159,8 @@ void buildLevel() {
     addCollisionPlane(vertices[8], vertices[11], vertices[9], 1);
     addCollisionPlane(0, 1, 0, 1, -1);
     addCollisionPlane(0, -1, 0, 1, -1);
+    addCollisionPlane(1, 0, 0, -3, -1);
+    addCollisionPlane(-1, 0, 0, 5, -1);
+    addCollisionPlane(0, 0, 1, 1, -1);
 
 }
