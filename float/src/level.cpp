@@ -119,7 +119,7 @@ void buildLevel() {
     addCollisionPlane(0, 1, 0, 1, -1);
     addCollisionPlane(0, -1, 0, 1, -1);
     addCollisionPlane(0, 0, 1, 1, -1);
-    addCollisionPlane(vertices[1], vertices[2], vertices[6], -1);
+    addCollisionPlane(vertices[1], vertices[2], vertices[6], 1);
 
     // -------------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ void buildLevel() {
 
     addSector();
     addPolygon4(8, 9, 13, 12, 4);
-    addCubeLines(8, 9, 13, 12, 10, 11, 14, 15);
+    addCubeLines(8, 9, 13, 12, 10, 11, 15, 14);
 
 }
 

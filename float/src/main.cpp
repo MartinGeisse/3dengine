@@ -25,7 +25,8 @@ static void moveRelative(float dx, float dy, float dz) {
             if (collisionPlane->targetSector < 0) {
                 newPosition = collisionPlane->plane.projectPointOntoPlane(newPosition);
             } else {
-                sector = sectors + collisionPlane->targetSector;
+                playerSectorIndex = collisionPlane->targetSector;
+                sector = sectors + playerSectorIndex;
                 i = -1;
             }
         }
