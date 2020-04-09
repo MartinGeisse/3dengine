@@ -353,3 +353,15 @@ void render() {
     renderSector(playerSectorIndex);
 
 }
+
+CollisionPlane *findCollisionPlane(Vector3 position) {
+    Sector *sector = sectors + playerSectorIndex;
+    for (int i = 0; i < sector->collisionPlaneCount; i++) {
+        CollisionPlane *collisionPlane = collisionPlanes + sector->collisionPlaneStart + i;
+        float v = collisionPlane->plane.evaluate(position);
+        if (v < 0) {
+            return collisionPlane;
+        }
+    }
+    return NULL;
+}

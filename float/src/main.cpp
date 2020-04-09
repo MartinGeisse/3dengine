@@ -16,7 +16,21 @@
 #define ROTATION 0.1f
 
 static void moveRelative(float dx, float dy, float dz) {
-    playerTransform.v += playerTransform.m * Vector3(dx, dy, dz);
+    Vector3 newPosition = playerTransform.v + playerTransform.m * Vector3(dx, dy, dz);
+    Sector *sector = sectors + playerSectorIndex;
+    for (int i = 0; i < sector->collisionPlaneCount; i++) {
+        CollisionPlane *collisionPlane = collisionPlanes + sector->collisionPlaneStart + i;
+        float v = collisionPlane->plane.evaluate(newPosition);
+        if (v < 0) {
+            if (collisionPlane->targetSector < 0) {
+                newPosition = collisionPlane->plane.projectPointOntoPlane(newPosition);
+            } else {
+                sector = sectors + collisionPlane->targetSector;
+                i = -1;
+            }
+        }
+    }
+    playerTransform.v = newPosition;
 }
 
 int main() {

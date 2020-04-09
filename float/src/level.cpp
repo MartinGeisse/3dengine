@@ -83,8 +83,15 @@ void addCubeLines(int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7
 
 }
 
+void addCollisionPlane(Vector3 v1, Vector3 v2, Vector3 v3, int targetSector) {
+    collisionPlanes[collisionPlaneCount].plane = buildPlane3FromPoints(v1, v2, v3).getNormalized();
+    collisionPlanes[collisionPlaneCount].targetSector = targetSector;
+    collisionPlaneCount++;
+    sectors[sectorCount - 1].collisionPlaneCount++;
+}
+
 void addCollisionPlane(float a, float b, float c, float d, int targetSector) {
-    collisionPlanes[collisionPlaneCount].plane = Plane3(a, b, c, d);
+    collisionPlanes[collisionPlaneCount].plane = Plane3(a, b, c, d).getNormalized();
     collisionPlanes[collisionPlaneCount].targetSector = targetSector;
     collisionPlaneCount++;
     sectors[sectorCount - 1].collisionPlaneCount++;
@@ -112,7 +119,7 @@ void buildLevel() {
     addCollisionPlane(0, 1, 0, 1, -1);
     addCollisionPlane(0, -1, 0, 1, -1);
     addCollisionPlane(0, 0, 1, 1, -1);
-    addCollisionPlane(0, 0, -1, 1, -1);
+    addCollisionPlane(vertices[1], vertices[2], vertices[6], -1);
 
     // -------------------------------------------------------------------------------
 

@@ -45,6 +45,18 @@ struct Plane3 {
         printf("Plane3(%f, %f, %f, %f)", a, b, c, d);
     }
 
+    // note: only works if normalized!
+    inline Vector3 projectPointOntoPlane(const Vector3 &p) {
+        float v = evaluate(p);
+        return Vector3(p.x - v * a, p.y - v * b, p.z - v * c);
+    }
+
 };
+
+inline Plane3 buildPlane3FromPoints(Vector3 a, Vector3 b, Vector3 c) {
+    Vector3 n = (c - a) % (b - a);
+    n.normalize();
+    return Plane3(n.x, n.y, n.z, -(n * a));
+}
 
 #endif
