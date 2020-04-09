@@ -22,6 +22,8 @@ void addSector() {
     sectors[sectorCount].solidPolygonCount = 0;
     sectors[sectorCount].portalCount = 0;
     sectors[sectorCount].lineCount = 0;
+    sectors[sectorCount].collisionPlaneStart = collisionPlaneCount;
+    sectors[sectorCount].collisionPlaneCount = 0;
     sectorCount++;
 }
 
@@ -81,6 +83,13 @@ void addCubeLines(int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7
 
 }
 
+void addCollisionPlane(float a, float b, float c, float d, int targetSector) {
+    collisionPlanes[collisionPlaneCount].plane = Plane3(a, b, c, d);
+    collisionPlanes[collisionPlaneCount].targetSector = targetSector;
+    collisionPlaneCount++;
+    sectors[sectorCount - 1].collisionPlaneCount++;
+}
+
 void buildLevel() {
 
     addVertex(-1, -1, -1); // 0
@@ -98,6 +107,15 @@ void buildLevel() {
     addPolygon4(0, 1, 2, 3, 4);
     addCubeLines(0, 1, 2, 3, 4, 5, 6, 7);
 
+    addCollisionPlane(1, 0, 0, 1, -1);
+    addCollisionPlane(-1, 0, 0, 1, -1);
+    addCollisionPlane(0, 1, 0, 1, -1);
+    addCollisionPlane(0, -1, 0, 1, -1);
+    addCollisionPlane(0, 0, 1, 1, -1);
+    addCollisionPlane(0, 0, -1, 1, -1);
+
+    // -------------------------------------------------------------------------------
+
     addVertex(+5, -1, +3); // 8
     addVertex(+3, -1, +1); // 9
     addVertex(+5, +1, +3); // 10
@@ -108,6 +126,8 @@ void buildLevel() {
     finishPortals();
     addPolygon4(1, 8, 9, 2, 4);
     addCubeLines(1, 8, 9, 2, 5, 10, 11, 6);
+
+    // -------------------------------------------------------------------------------
 
     addVertex(+5, -1, -1); // 12
     addVertex(+3, -1, -1); // 13
