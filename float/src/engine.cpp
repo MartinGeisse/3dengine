@@ -141,6 +141,8 @@ static void renderSector(int sectorIndex) {
         // add new clippers from the portal
         // TODO merge clippers, don't just add them
         // TODO how does clipping portals themselves work?
+        // --> only near plane clipping needed, but if we do full clipping then we can replace the current
+        // clipper stack frame with the clipped portal only
         for (int j = 0; j < polygon->vertexCount; j++) {
             // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
             // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
