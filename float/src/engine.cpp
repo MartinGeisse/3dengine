@@ -251,7 +251,6 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
 }
 
 static void renderSector(int sectorIndex) {
-
     Sector *sector = sectors + sectorIndex;
     int *sectorVertexIndices = vertexIndices + sector->vertexIndexStart;
     Polygon *polygon = polygons + sector->polygonStart;
@@ -266,20 +265,23 @@ static void renderSector(int sectorIndex) {
             // save current clipper stack
             int oldClipperStackStart = clipperStackStart;
 
-            // install the clipped portal as the only active clippers
+            // install the clipped portal as the only active clippers; protect against clipper stack overflow
             clipperStackStart = clipperStackEnd;
             clipperStackEnd += currentPolygonVertexCount2;
-            for (int j = 0; j < currentPolygonVertexCount2; j++) {
-                // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
-                // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
-                clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
-                    currentPolygonVertices2[j],
-                    currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
-                );
-            }
+            if (clipperStackEnd <= maxClipperStackSize) {
+                for (int j = 0; j < currentPolygonVertexCount2; j++) {
+                    // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
+                    // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
+                    clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
+                        currentPolygonVertices2[j],
+                        currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
+                    );
+                }
 
-            // render the target sector with the new clipper stack
-            renderSector(polygon->targetSectorOrColor);
+                // render the target sector with the new clipper stack
+                renderSector(polygon->targetSectorOrColor);
+
+            }
 
             // restore clipper stack
             clipperStackEnd = clipperStackStart;
@@ -318,6 +320,8 @@ static void renderSector(int sectorIndex) {
     }
 
 }
+
+// TODO problem: infinite recursion in drawing sectors 1/0/1/0/1/...
 
 void render() {
 
