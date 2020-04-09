@@ -43,6 +43,12 @@ static Plane2 clipperStack[maxClipperStackSize];
 static int clipperStackStart;
 static int clipperStackEnd;
 
+// internal data: current polygon
+static int currentPolygonVertexCount3;
+static Vector3 currentPolygonVertices3[64];
+static int currentPolygonVertexCount2;
+static Vector2 currentPolygonVertices2[64];
+
 // called once for all non-near vertices, and on demand for near vertices after clipping
 inline static Vector2 project(Vector3 v) {
     return Vector2(HALF_SCREEN_WIDTH + v.x / v.z * FOV_UNIT, HALF_SCREEN_HEIGHT - v.y / v.z * FOV_UNIT);
@@ -103,6 +109,23 @@ static void renderLine(int vertexIndex1, int vertexIndex2) {
     }
 }
 
+// fills the "currentPolygon*" data structures
+static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
+
+    // TODO
+    currentPolygonVertexCount3 = vertexCount;
+    for (int i = 0; i < vertexCount; i++) {
+        currentPolygonVertices3[i] = transformedVertices[polygonVertexIndices[i]];
+    }
+
+    // TODO
+    currentPolygonVertexCount2 = vertexCount;
+    for (int i = 0; i < vertexCount; i++) {
+        currentPolygonVertices2[i] = projectedVertices[polygonVertexIndices[i]];
+    }
+
+}
+
 static void renderSector(int sectorIndex) {
 
     Sector *sector = sectors + sectorIndex;
@@ -141,14 +164,15 @@ static void renderSector(int sectorIndex) {
 
     // draw solid polygons
     for (int i = 0; i < sector->solidPolygonCount; i++) {
-        for (int j = 2; j < polygon->vertexCount; j++) {
+        projectAndClipPolygon(sectorVertexIndices, polygon->vertexCount);
+        for (int j = 2; j < currentPolygonVertexCount2; j++) {
             al_draw_filled_triangle(
-                projectedVertices[sectorVertexIndices[0]].x,
-                projectedVertices[sectorVertexIndices[0]].y,
-                projectedVertices[sectorVertexIndices[j - 1]].x,
-                projectedVertices[sectorVertexIndices[j - 1]].y,
-                projectedVertices[sectorVertexIndices[j]].x,
-                projectedVertices[sectorVertexIndices[j]].y,
+                currentPolygonVertices2[0].x,
+                currentPolygonVertices2[0].y,
+                currentPolygonVertices2[j - 1].x,
+                currentPolygonVertices2[j - 1].y,
+                currentPolygonVertices2[j].x,
+                currentPolygonVertices2[j].y,
                 splitLineColor
             );
         }
