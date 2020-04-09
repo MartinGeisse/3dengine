@@ -129,10 +129,17 @@ void buildLevel() {
     addVertex(+3, +1, +1); // 11
 
     addSector();
+    addPolygon4(5, 6, 2, 1, 0);
     addPolygon4(8, 9, 11, 10, 2);
     finishPortals();
     addPolygon4(1, 8, 9, 2, 4);
     addCubeLines(1, 8, 9, 2, 5, 10, 11, 6);
+
+    addCollisionPlane(vertices[1], vertices[6], vertices[2], 0);
+    addCollisionPlane(vertices[8], vertices[9], vertices[11], 2);
+    addCollisionPlane(0, 1, 0, 1, -1);
+    addCollisionPlane(0, -1, 0, 1, -1);
+
 
     // -------------------------------------------------------------------------------
 
@@ -142,8 +149,14 @@ void buildLevel() {
     addVertex(+3, +1, -1); // 15
 
     addSector();
+    addPolygon4(10, 11, 9, 8, 1);
+    finishPortals();
     addPolygon4(8, 9, 13, 12, 4);
     addCubeLines(8, 9, 13, 12, 10, 11, 15, 14);
+
+    addCollisionPlane(vertices[8], vertices[11], vertices[9], 1);
+    addCollisionPlane(0, 1, 0, 1, -1);
+    addCollisionPlane(0, -1, 0, 1, -1);
 
 }
 
