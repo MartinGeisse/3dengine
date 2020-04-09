@@ -46,6 +46,7 @@ static int clipperStackEnd;
 // internal data: current polygon
 static int currentPolygonVertexCount3;
 static Vector3 currentPolygonVertices3[64];
+static Vector3 currentPolygonBackupVertices3[64];
 static int currentPolygonVertexCount2;
 static Vector2 currentPolygonVertices2[64];
 static Vector2 currentPolygonBackupVertices2[64];
@@ -136,7 +137,44 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
             currentPolygonVertices3[i] = transformedVertices[polygonVertexIndices[i]];
         }
 
-        // TODO near plane clipping
+        // Evaluate all vertices against the near plane. While we could evaluate on the fly with a simple subtraction,
+        // this might lead to this block and the 2d one below being merged in the future since we keep them similar
+        // to each other.
+        // During clipping, we read from the backup array, to handle the case that one vertex in the polygon
+        // becomes two vertices after clipping. This happens if only a single vertex is clipped away.
+        for (int j = 0; j < currentPolygonVertexCount3; j++) {
+            currentPolygonEvaluations[j] = currentPolygonVertices3[j].z - NEAR_Z;
+            currentPolygonBackupVertices3[j] = currentPolygonVertices3[j];
+        }
+
+        // clip each side
+        int outputVertexCount = 0;
+        for (int j = 0; j < currentPolygonVertexCount3; j++) {
+            Vector3 currentVertex = currentPolygonBackupVertices3[j];
+            float currentEvaluation = currentPolygonEvaluations[j];
+            if (currentEvaluation > 0) {
+                currentPolygonVertices3[outputVertexCount] = currentVertex;
+                outputVertexCount++;
+                continue;
+            }
+            int previousIndex = (j == 0 ? currentPolygonVertexCount3 - 1 : j - 1);
+            int nextIndex = (j == currentPolygonVertexCount3 - 1 ? 0 : j + 1);
+            float previousEvaluation = currentPolygonEvaluations[previousIndex];
+            float nextEvaluation = currentPolygonEvaluations[nextIndex];
+            if (previousEvaluation > 0) {
+                currentPolygonVertices3[outputVertexCount] =
+                    currentVertex - (currentPolygonBackupVertices3[previousIndex] - currentVertex) *
+                        currentEvaluation / (previousEvaluation - currentEvaluation);
+                outputVertexCount++;
+            }
+            if (nextEvaluation > 0) {
+                currentPolygonVertices3[outputVertexCount] =
+                    currentVertex - (currentPolygonBackupVertices3[nextIndex] - currentVertex) *
+                        currentEvaluation / (nextEvaluation - currentEvaluation);
+                outputVertexCount++;
+            }
+        }
+        currentPolygonVertexCount3 = outputVertexCount;
 
         // project the clipped vertices
         currentPolygonVertexCount2 = currentPolygonVertexCount3;
@@ -217,33 +255,35 @@ static void renderSector(int sectorIndex) {
     // draw portals
     for (int i = 0; i < sector->portalCount; i++) {
 
-        // save current clipper stack
-        int oldClipperStackEnd = clipperStackEnd;
+        // clip the portal
+        projectAndClipPolygon(sectorVertexIndices, polygon->vertexCount);
 
-        // add new clippers from the portal
-        // TODO merge clippers, don't just add them
-        // TODO how does clipping portals themselves work?
-        // --> only near plane clipping needed, but if we do full clipping then we can replace the current
-        // clipper stack frame with the clipped portal only
-        for (int j = 0; j < polygon->vertexCount; j++) {
+        // save current clipper stack
+        int oldClipperStackStart = clipperStackStart;
+
+        // install the clipped portal as the only active clippers
+        clipperStackStart = clipperStackEnd;
+        clipperStackEnd += currentPolygonVertexCount2;
+        for (int j = 0; j < currentPolygonVertexCount2; j++) {
             // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
             // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
-            clipperStack[clipperStackEnd] = buildPlane2FromPoints(
-                projectedVertices[sectorVertexIndices[j]],
-                projectedVertices[sectorVertexIndices[j == 0 ? polygon->vertexCount - 1 : j - 1]]
+            clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
+                currentPolygonVertices2[j],
+                currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
             );
-            clipperStackEnd++;
         }
 
         // render the target sector with the new clipper stack
         renderSector(polygon->targetSectorOrColor);
 
         // restore clipper stack
-        clipperStackEnd = oldClipperStackEnd;
+        clipperStackEnd = clipperStackStart;
+        clipperStackStart = oldClipperStackStart;
 
         // advance to the next polygon and its vertices
         sectorVertexIndices += polygon->vertexCount;
         polygon++;
+
     }
 
     // draw solid polygons
