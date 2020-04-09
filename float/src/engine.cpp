@@ -22,6 +22,10 @@ int vertexIndices[maxVertexIndices];
 int polygonCount = 0;
 Polygon polygons[maxPolygons];
 
+// collision detection
+int collisionPlaneCount = 0;
+CollisionPlane collisionPlanes[maxCollisionPlanes];
+
 // sectors
 int sectorCount = 0;
 Sector sectors[maxSectors];

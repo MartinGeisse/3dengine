@@ -11,6 +11,9 @@ struct Plane3 {
 
     float a, b, c, d;
 
+    inline Plane3() {
+    }
+
     inline Plane3(float a, float b, float c, float d): a(a), b(b), c(c), d(d) {
     }
 

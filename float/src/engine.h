@@ -2,7 +2,10 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "Vector2.h"
 #include "Vector3.h"
+#include "Plane2.h"
+#include "Plane3.h"
 #include "Transform3.h"
 
 // screen size in pixels
@@ -42,6 +45,17 @@ struct Sector {
     // number of lines, each taking two vertex indices
     int lineCount;
 
+    // index of the first collision plane
+    int collisionPlaneStart;
+
+    // number of collision planes
+    int collisionPlaneCount;
+
+};
+
+struct CollisionPlane {
+    Plane3 plane;
+    int targetSector;
 };
 
 // static limits
@@ -49,6 +63,7 @@ const int maxVertices = 1024;
 const int maxVertexIndices = 1024;
 const int maxPolygons = 256;
 const int maxSectors = 64;
+const int maxCollisionPlanes = 1024;
 
 // vertices
 extern int vertexCount;
@@ -61,6 +76,10 @@ extern int vertexIndices[];
 // polygons
 extern int polygonCount;
 extern Polygon polygons[];
+
+// collision detection
+extern int collisionPlaneCount;
+extern CollisionPlane collisionPlanes[];
 
 // sectors
 extern int sectorCount;
