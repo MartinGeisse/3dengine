@@ -95,17 +95,28 @@ void buildLevel() {
     addSector();
     addPolygon4(1, 2, 6, 5, 1);
     finishPortals();
-    // addPolygon4(0, 1, 2, 3, 4);
+    addPolygon4(0, 1, 2, 3, 4);
     addCubeLines(0, 1, 2, 3, 4, 5, 6, 7);
 
-    addVertex(+3, -1, +3); // 8
+    addVertex(+5, -1, +3); // 8
     addVertex(+3, -1, +1); // 9
-    addVertex(+3, +1, +3); // 10
+    addVertex(+5, +1, +3); // 10
     addVertex(+3, +1, +1); // 11
 
     addSector();
+    addPolygon4(8, 9, 11, 10, 2);
+    finishPortals();
     addPolygon4(1, 8, 9, 2, 4);
     addCubeLines(1, 8, 9, 2, 5, 10, 11, 6);
+
+    addVertex(+5, -1, -1); // 12
+    addVertex(+3, -1, -1); // 13
+    addVertex(+5, +1, -1); // 14
+    addVertex(+3, +1, -1); // 15
+
+    addSector();
+    addPolygon4(8, 9, 13, 12, 4);
+    addCubeLines(8, 9, 13, 12, 10, 11, 14, 15);
 
 }
 

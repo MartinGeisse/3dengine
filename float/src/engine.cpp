@@ -257,28 +257,31 @@ static void renderSector(int sectorIndex) {
 
         // clip the portal
         projectAndClipPolygon(sectorVertexIndices, polygon->vertexCount);
+        if (currentPolygonVertexCount2 != 0) {
 
-        // save current clipper stack
-        int oldClipperStackStart = clipperStackStart;
+            // save current clipper stack
+            int oldClipperStackStart = clipperStackStart;
 
-        // install the clipped portal as the only active clippers
-        clipperStackStart = clipperStackEnd;
-        clipperStackEnd += currentPolygonVertexCount2;
-        for (int j = 0; j < currentPolygonVertexCount2; j++) {
-            // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
-            // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
-            clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
-                currentPolygonVertices2[j],
-                currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
-            );
+            // install the clipped portal as the only active clippers
+            clipperStackStart = clipperStackEnd;
+            clipperStackEnd += currentPolygonVertexCount2;
+            for (int j = 0; j < currentPolygonVertexCount2; j++) {
+                // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
+                // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
+                clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
+                    currentPolygonVertices2[j],
+                    currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
+                );
+            }
+
+            // render the target sector with the new clipper stack
+            renderSector(polygon->targetSectorOrColor);
+
+            // restore clipper stack
+            clipperStackEnd = clipperStackStart;
+            clipperStackStart = oldClipperStackStart;
+
         }
-
-        // render the target sector with the new clipper stack
-        renderSector(polygon->targetSectorOrColor);
-
-        // restore clipper stack
-        clipperStackEnd = clipperStackStart;
-        clipperStackStart = oldClipperStackStart;
 
         // advance to the next polygon and its vertices
         sectorVertexIndices += polygon->vertexCount;
