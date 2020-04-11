@@ -2,8 +2,10 @@
 #ifndef FIXED_H
 #define FIXED_H
 
-#define FIXED_IS_FLOAT 0
+#define FIXED_IS_FLOAT 1
 #if FIXED_IS_FLOAT
+
+#include <math.h>
 
 typedef float Fixed;
 const Fixed fixedZero = 0.0f;
@@ -11,6 +13,22 @@ const Fixed fixedOne = 1.0f;
 const Fixed fixedMinusOne = -1.0f;
 const Fixed fixedEpsilon = 0.01f;
 const Fixed fixedMinusEpsilon = -0.01f;
+
+inline Fixed buildFixed(signed short integral, unsigned short fractional) {
+    return integral * 1.0f + fractional / 65536.0f;
+}
+
+inline Fixed intToFixed(signed short integral) {
+    return (float)integral;
+}
+
+inline int fixedToInt(Fixed f) {
+    return (int)f;
+}
+
+inline int fixedToFractionalPart(Fixed f) {
+    return (int)(fmodf(f, 1.0f) * 65536.0f);
+}
 
 #else
 
