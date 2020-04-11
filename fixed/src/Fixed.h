@@ -74,16 +74,60 @@ inline Fixed operator*=(Fixed &a, Fixed b) {
 }
 
 inline Fixed operator/(Fixed a, Fixed b) {
+
+    // Check for division by zero.
+    // We want to check this specifically because Linux is so braindead that it describes a division by zero as
+    // a "floating point exception" even though no floating point operation is involved. We do have actual
+    // floating point code to emulate fixed-point operations and we want to distinguish the errors.
     if (b.value == 0) {
-        // We want to check this specifically because Linux is so braindead that it describes a division by zero as
-        // a "floating point exception" even though no floating point operation is involved. We do have actual
-        // floating point code to emulate fixed-point operations and we want to distinguish the errors.
         printf("division by zero\n");
         exit(1);
     }
-    int p = (a.value & 0xffff0000) / b.value;
-    int q = (a.value << 16) / b.value;
-    return Fixed::build((p << 16) + q);
+
+    // Handle sign, so the actual division is unsigned / unsigned.
+    unsigned int aabs, babs;
+    bool negative;
+    if (a.value < 0) {
+        if (b.value < 0) {
+            aabs = -a.value;
+            babs = -b.value;
+            negative = false;
+        } else {
+            aabs = -a.value;
+            babs = b.value;
+            negative = true;
+        }
+    } else {
+        if (b.value < 0) {
+            aabs = a.value;
+            babs = -b.value;
+            negative = true;
+        } else {
+            aabs = a.value;
+            babs = b.value;
+            negative = false;
+        }
+    }
+
+    // This loop takes 48 iterations. I think we might get this down to 32 if we accept that result overflow produces
+    // a result that is different from the correct result truncated to 32 bits: The first 16 iterations produce bits
+    // 32-47, so if no overflow occurs, these bits are zero and the current working dividend after those 16 bits is
+    // still the original dividend.
+    unsigned int workingDividend = 0;
+    unsigned int result = 0;
+    for (int i = 0; i < 48; i++) {
+        workingDividend = (workingDividend << 1) | (aabs >> 31);
+        aabs = aabs << 1;
+        result = result << 1;
+        if (workingDividend >= babs) {
+            workingDividend -= babs;
+            result++;
+        }
+    }
+
+    // apply sign
+    return Fixed::build(negative ? -result : result);
+
 }
 
 inline Fixed operator/=(Fixed &a, Fixed b) {
