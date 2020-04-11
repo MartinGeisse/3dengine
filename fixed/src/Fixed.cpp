@@ -3,18 +3,32 @@
 #include <math.h>
 #include "Fixed.h"
 
+#if FIXED_IS_FLOAT
+
+Fixed floatToFixed(float x) {
+    return x;
+}
+
+float fixedToFloat(Fixed x) {
+    return x;
+}
+
+#else
+
 const float SCALE = 65536.0;
 
 Fixed floatToFixed(float x) {
-    return Fixed::build((int)(x * SCALE));
+    return buildFixed((int)(x * SCALE));
 }
 
 float fixedToFloat(Fixed x) {
     return x.value / SCALE;
 }
 
-void Fixed::print() {
-    printf("%f", fixedToFloat(*this));
+#endif
+
+void printFixed(Fixed x) {
+    printf("%f", fixedToFloat(x));
 }
 
 Fixed fixedSin(Fixed x) {

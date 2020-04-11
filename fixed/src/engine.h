@@ -19,11 +19,11 @@ const int HALF_SCREEN_HEIGHT = 300;
 const int FOV_UNIT = 400;
 
 // Fixed-typed variants of the above constants
-const Fixed SCREEN_WIDTH_FIXED = Fixed::fromInt(SCREEN_WIDTH);
-const Fixed HALF_SCREEN_WIDTH_FIXED = Fixed::fromInt(HALF_SCREEN_WIDTH);
-const Fixed SCREEN_HEIGHT_FIXED = Fixed::fromInt(SCREEN_HEIGHT);
-const Fixed HALF_SCREEN_HEIGHT_FIXED = Fixed::fromInt(HALF_SCREEN_HEIGHT);
-const Fixed FOV_UNIT_FIXED = Fixed::fromInt(FOV_UNIT);
+const Fixed SCREEN_WIDTH_FIXED = intToFixed(SCREEN_WIDTH);
+const Fixed HALF_SCREEN_WIDTH_FIXED = intToFixed(HALF_SCREEN_WIDTH);
+const Fixed SCREEN_HEIGHT_FIXED = intToFixed(SCREEN_HEIGHT);
+const Fixed HALF_SCREEN_HEIGHT_FIXED = intToFixed(HALF_SCREEN_HEIGHT);
+const Fixed FOV_UNIT_FIXED = intToFixed(FOV_UNIT);
 
 struct Polygon {
 

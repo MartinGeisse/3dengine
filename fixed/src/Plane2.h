@@ -24,12 +24,12 @@ struct Plane2 {
     }
 
     inline Plane2 getNormalized() {
-        Fixed q = Fixed::fromInt(1) / getScale();
+        Fixed q = intToFixed(1) / getScale();
         return Plane2(a * q, b * q, c * q);
     }
 
     inline void normalize() {
-        Fixed q = Fixed::fromInt(1) / getScale();
+        Fixed q = intToFixed(1) / getScale();
         a *= q;
         b *= q;
         c *= q;
@@ -41,11 +41,11 @@ struct Plane2 {
 
     inline void print() {
         printf("Plane2(");
-        a.print();
+        printFixed(a);
         printf(", ");
-        b.print();
+        printFixed(b);
         printf(", ");
-        c.print();
+        printFixed(c);
         printf(")");
     }
 

@@ -16,7 +16,7 @@ void addVertex(Fixed x, Fixed y, Fixed z) {
 }
 
 void addVertex(int x, int y, int z) {
-    addVertex(Fixed::fromInt(x), Fixed::fromInt(y), Fixed::fromInt(z));
+    addVertex(intToFixed(x), intToFixed(y), intToFixed(z));
 }
 
 // Note: after addSector, sector contents must be added in the order: solid polygons, then lines. Any other order
@@ -103,7 +103,7 @@ void addCollisionPlane(Fixed a, Fixed b, Fixed c, Fixed d, int targetSector) {
 }
 
 void addCollisionPlane(int a, int b, int c, int d, int targetSector) {
-    addCollisionPlane(Fixed::fromInt(a), Fixed::fromInt(b), Fixed::fromInt(c), Fixed::fromInt(d), targetSector);
+    addCollisionPlane(intToFixed(a), intToFixed(b), intToFixed(c), intToFixed(d), targetSector);
 }
 
 void buildLevel() {

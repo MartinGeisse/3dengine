@@ -8,7 +8,7 @@
 #include "engine.h"
 
 // constants
-const Fixed NEAR_Z(0, 6554); // 0.1
+const Fixed NEAR_Z = buildFixed(0, 6554); // 0.1
 
 // vertices
 int vertexCount = 0;

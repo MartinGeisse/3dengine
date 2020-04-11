@@ -2,6 +2,18 @@
 #ifndef FIXED_H
 #define FIXED_H
 
+#define FIXED_IS_FLOAT 0
+#if FIXED_IS_FLOAT
+
+typedef float Fixed;
+const Fixed fixedZero = 0.0f;
+const Fixed fixedOne = 1.0f;
+const Fixed fixedMinusOne = -1.0f;
+const Fixed fixedEpsilon = 0.01f;
+const Fixed fixedMinusEpsilon = -0.01f;
+
+#else
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,40 +21,39 @@ struct Fixed {
 
     int value;
 
-    inline static Fixed build(int value) {
-        Fixed result;
-        result.value = value;
-        return result;
-    }
-
-    inline static Fixed fromInt(signed short integral) {
-        return Fixed(integral, 0);
-    }
-
     inline Fixed() {
-    }
-
-    inline Fixed(signed short integral, unsigned short fractional) : value((((int)integral) << 16) + fractional) {
-    }
-
-    void print();
-
-    inline int toInt() {
-        return value >> 16;
-    }
-
-    inline int getFractionalPart() {
-        return value & 0xffff;
     }
 
 };
 
+inline Fixed buildFixed(int value) {
+    Fixed result;
+    result.value = value;
+    return result;
+}
+
+inline Fixed buildFixed(signed short integral, unsigned short fractional) {
+    return buildFixed((((int)integral) << 16) + fractional);
+}
+
+inline Fixed intToFixed(signed short integral) {
+    return buildFixed(integral, 0);
+}
+
+inline int fixedToInt(Fixed f) {
+    return f.value >> 16;
+}
+
+inline int fixedToFractionalPart(Fixed f) {
+    return f.value & 0xffff;
+}
+
 inline Fixed operator-(Fixed a) {
-    return Fixed::build(-a.value);
+    return buildFixed(-a.value);
 }
 
 inline Fixed operator+(Fixed a, Fixed b) {
-    return Fixed::build(a.value + b.value);
+    return buildFixed(a.value + b.value);
 }
 
 inline void operator+=(Fixed &a, Fixed b) {
@@ -50,7 +61,7 @@ inline void operator+=(Fixed &a, Fixed b) {
 }
 
 inline Fixed operator-(Fixed a, Fixed b) {
-    return Fixed::build(a.value - b.value);
+    return buildFixed(a.value - b.value);
 }
 
 inline void operator-=(Fixed &a, Fixed b) {
@@ -62,7 +73,7 @@ inline Fixed operator*(Fixed a, Fixed b) {
     int al = a.value & 0xffff;
     int bh = b.value >> 16;
     int bl = b.value & 0xffff;
-    return Fixed::build(
+    return buildFixed(
         ((ah * bh) << 16) +
         ah * bl +
         al * bh +
@@ -127,7 +138,7 @@ inline Fixed operator/(Fixed a, Fixed b) {
     }
 
     // apply sign
-    return Fixed::build(negative ? -result : result);
+    return buildFixed(negative ? -result : result);
 
 }
 
@@ -151,16 +162,18 @@ inline bool operator>=(Fixed a, Fixed b) {
     return a.value >= b.value;
 }
 
-const Fixed fixedZero(0, 0);
-const Fixed fixedOne(1, 0);
-const Fixed fixedMinusOne(-1, 0);
-const Fixed fixedEpsilon(0, 66); // 1/1000
-const Fixed fixedMinusEpsilon(-1, 65536 - 66); // 1/1000
+const Fixed fixedZero = buildFixed(0, 0);
+const Fixed fixedOne = buildFixed(1, 0);
+const Fixed fixedMinusOne = buildFixed(-1, 0);
+const Fixed fixedEpsilon = buildFixed(0, 66); // 1/1000
+const Fixed fixedMinusEpsilon = buildFixed(-1, 65536 - 66); // 1/1000
 
+#endif
+
+void printFixed(Fixed x);
 Fixed fixedSin(Fixed x);
 Fixed fixedCos(Fixed x);
 Fixed fixedSqrt(Fixed x);
-
 Fixed floatToFixed(float x);
 float fixedToFloat(Fixed x);
 

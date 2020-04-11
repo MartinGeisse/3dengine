@@ -51,11 +51,11 @@ struct Vector3 {
 
     inline void print() {
         printf("(");
-        x.print();
+        printFixed(x);
         printf(", ");
-        y.print();
+        printFixed(y);
         printf(", ");
-        z.print();
+        printFixed(z);
         printf(")");
     }
 

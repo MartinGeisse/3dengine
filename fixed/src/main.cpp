@@ -12,8 +12,8 @@
 #include "engine.h"
 #include "level.h"
 
-const Fixed SPEED(0, 6554);
-const Fixed ROTATION(0, 6554);
+const Fixed SPEED = buildFixed(0, 6554);
+const Fixed ROTATION = buildFixed(0, 6554);
 
 static void moveRelative(Fixed dx, Fixed dy, Fixed dz) {
     Vector3 newPosition = playerTransform.v + playerTransform.m * Vector3(dx, dy, dz);

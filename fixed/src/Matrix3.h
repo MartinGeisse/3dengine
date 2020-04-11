@@ -38,7 +38,7 @@ struct Matrix3 {
     }
 
     inline Matrix3 getInverse() {
-        Fixed a = Fixed::fromInt(1) / determinant();
+        Fixed a = intToFixed(1) / determinant();
         return Matrix3(
 
             a * (m22 * m33 - m23 * m32),
@@ -58,23 +58,23 @@ struct Matrix3 {
 
     inline void print() {
         printf("(");
-        m11.print();
+        printFixed(m11);
         printf(", ");
-        m12.print();
+        printFixed(m12);
         printf(", ");
-        m13.print();
+        printFixed(m13);
         printf(", ");
-        m21.print();
+        printFixed(m21);
         printf(", ");
-        m22.print();
+        printFixed(m22);
         printf(", ");
-        m23.print();
+        printFixed(m23);
         printf(", ");
-        m31.print();
+        printFixed(m31);
         printf(", ");
-        m32.print();
+        printFixed(m32);
         printf(", ");
-        m33.print();
+        printFixed(m33);
         printf(")");
     }
 
