@@ -2,6 +2,8 @@
 #ifndef FIXED_H
 #define FIXED_H
 
+#include <stdio.h>
+
 struct Fixed {
 
     int value;
@@ -72,6 +74,13 @@ inline Fixed operator*=(Fixed &a, Fixed b) {
 }
 
 inline Fixed operator/(Fixed a, Fixed b) {
+    if (b.value == 0) {
+        // We want to check this specifically because Linux is so braindead that it describes a division by zero as
+        // a "floating point exception" even though no floating point operation is involved. We do have actual
+        // floating point code to emulate fixed-point operations and we want to distinguish the errors.
+        printf("division by zero\n");
+        exit(1);
+    }
     int p = (a.value & 0xffff0000) / b.value;
     int q = (a.value << 16) / b.value;
     return Fixed::build((p << 16) + q);
