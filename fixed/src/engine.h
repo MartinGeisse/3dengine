@@ -2,7 +2,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#define DEBUG_RENDERING 1
+#define DEBUG_RENDERING 0
 
 #include "Fixed.h"
 #include "Vector2.h"
