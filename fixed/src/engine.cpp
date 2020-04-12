@@ -107,6 +107,14 @@ static void renderLine(int vertexIndex1, int vertexIndex2) {
     // non-projected version of the other vertex too, to perform clipping itself.
     Fixed vaz = transformedVertices[vertexIndex1].z - NEAR_Z;
     Fixed vbz = transformedVertices[vertexIndex2].z - NEAR_Z;
+    #if DEBUG_RENDERING
+        printf("render line, vaz = ");
+        printFixed(vaz);
+        printf(", vbz = ");
+        printFixed(vbz);
+        printf("\n");
+    #endif
+
     if (vaz < fixedZero) {
         if (vbz < fixedZero) {
             // invisible
