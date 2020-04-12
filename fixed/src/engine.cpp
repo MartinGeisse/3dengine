@@ -76,16 +76,32 @@ static void renderLine(Vector2 a, Vector2 b) {
         Plane2 *clipper = clipperStack + i;
         Fixed va = clipper->evaluate(a);
         Fixed vb = clipper->evaluate(b);
-        if (va < fixedZero) {
-            if (vb < fixedZero) {
+        #if DEBUG_RENDERING
+            printf("clipper evaluation: ");
+            printFixed(va);
+            printf(", ");
+            printFixed(vb);
+            printf("\n");
+        #endif
+        if (va < fixedEpsilon) {
+            if (vb < fixedEpsilon) {
                 // invisible
+                #if DEBUG_RENDERING
+                    printf("invisible\n");
+                #endif
                 return;
             } else {
                 // point a clipped away
+                #if DEBUG_RENDERING
+                    printf("adjusting first point\n");
+                #endif
                 a -= (b - a) * va / (vb - va);
             }
-        } else if (vb < fixedZero) {
+        } else if (vb < fixedEpsilon) {
             // point b clipped away
+            #if DEBUG_RENDERING
+                printf("adjusting second point\n");
+            #endif
             b -= (a - b) * vb / (va - vb);
         } // else: fully visible WRT this clipper
     }
