@@ -2,7 +2,7 @@
 #ifndef FIXED_H
 #define FIXED_H
 
-#define FIXED_IS_FLOAT 1
+#define FIXED_IS_FLOAT 0
 #if FIXED_IS_FLOAT
 
 #include <math.h>
