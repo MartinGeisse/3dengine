@@ -286,6 +286,17 @@ static void projectAndClipPolygon(int *polygonVertexIndices, int vertexCount) {
 }
 
 static void renderSector(int sectorIndex) {
+
+    #if DEBUG_RENDERING
+        printf("rendering sector %d\n", sectorIndex);
+        printf("clippers: \n");
+        for (int i = clipperStackStart; i < clipperStackEnd; i++) {
+            printf("\t");
+            clipperStack[i].print();
+            printf("\n");
+        }
+    #endif
+
     Sector *sector = sectors + sectorIndex;
     int *sectorVertexIndices = vertexIndices + sector->vertexIndexStart;
     Polygon *polygon = polygons + sector->polygonStart;
@@ -296,6 +307,9 @@ static void renderSector(int sectorIndex) {
         // clip the portal
         projectAndClipPolygon(sectorVertexIndices, polygon->vertexCount);
         if (currentPolygonVertexCount2 >= 3) {
+            #if DEBUG_RENDERING
+                printf("portal visible\n");
+            #endif
 
             // Check winding (backface culling). We don't really need this, but without it we'll draw a whole sector
             // against an "impossible" set of clippers, slowing things down.
@@ -335,6 +349,10 @@ static void renderSector(int sectorIndex) {
                 clipperStackStart = oldClipperStackStart;
 
             }
+        } else {
+            #if DEBUG_RENDERING
+                printf("portal not visible\n");
+            #endif
         }
 
         // advance to the next polygon and its vertices
@@ -370,6 +388,14 @@ static void renderSector(int sectorIndex) {
 }
 
 void render() {
+
+    #if DEBUG_RENDERING
+        printf("\n");
+        printf("---------------------------------------------\n");
+        printf("--- rendering\n");
+        printf("---------------------------------------------\n");
+        printf("\n");
+    #endif
 
     // initialize (might go into a one-time initialization)
     wireframeColor.r = 0.0f;

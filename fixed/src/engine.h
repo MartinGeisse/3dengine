@@ -2,6 +2,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#define DEBUG_RENDERING 1
+
 #include "Fixed.h"
 #include "Vector2.h"
 #include "Vector3.h"
