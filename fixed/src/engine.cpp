@@ -58,10 +58,15 @@ static Fixed currentPolygonEvaluations[64];
 
 // called once for all non-near vertices, and on demand for near vertices after clipping
 static Vector2 project(Vector3 v) {
-    return Vector2(
-        HALF_SCREEN_WIDTH_FIXED + v.x / v.z * FOV_UNIT_FIXED,
-        HALF_SCREEN_HEIGHT_FIXED - v.y / v.z * FOV_UNIT_FIXED
-    );
+    return Vector2(v.x / v.z, v.y / v.z);
+}
+
+static inline Fixed screenTransformX(Fixed x) {
+    return HALF_SCREEN_WIDTH_FIXED + x * FOV_UNIT_FIXED;
+}
+
+static inline Fixed screenTransformY(Fixed y) {
+    return HALF_SCREEN_HEIGHT_FIXED - y * FOV_UNIT_FIXED;
 }
 
 static void renderLine(Vector2 a, Vector2 b) {
@@ -86,7 +91,13 @@ static void renderLine(Vector2 a, Vector2 b) {
     }
 
     // draw clipped line
-    al_draw_line(fixedToFloat(a.x), fixedToFloat(a.y), fixedToFloat(b.x), fixedToFloat(b.y), wireframeColor, 1.0f);
+    al_draw_line(
+        fixedToFloat(screenTransformX(a.x)),
+        fixedToFloat(screenTransformY(a.y)),
+        fixedToFloat(screenTransformX(b.x)),
+        fixedToFloat(screenTransformY(b.y)),
+        wireframeColor, 1.0f
+    );
 
 }
 
@@ -289,7 +300,7 @@ static void renderSector(int sectorIndex) {
             // Check winding (backface culling). We don't really need this, but without it we'll draw a whole sector
             // against an "impossible" set of clippers, slowing things down.
             int correctWinding = 1;
-            Plane2 firstSide = buildPlane2FromPoints(currentPolygonVertices2[1], currentPolygonVertices2[0]);
+            Plane2 firstSide = buildPlane2FromPoints(currentPolygonVertices2[0], currentPolygonVertices2[1]);
             for (int j = 2; j < currentPolygonVertexCount2; j++) {
                 if (firstSide.evaluate(currentPolygonVertices2[j]) < fixedMinusEpsilon) {
                     correctWinding = 0;
@@ -309,8 +320,8 @@ static void renderSector(int sectorIndex) {
                         // We have to invert the order here because while all logic seems to expect counter-clockwise winding for
                         // portals, the transformation to screen coordinates (+y pointing down!) actually inverts that.
                         clipperStack[clipperStackStart + j] = buildPlane2FromPoints(
-                            currentPolygonVertices2[j],
-                            currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1]
+                            currentPolygonVertices2[j == 0 ? currentPolygonVertexCount2 - 1 : j - 1],
+                            currentPolygonVertices2[j]
                         );
                     }
 
@@ -337,12 +348,12 @@ static void renderSector(int sectorIndex) {
         projectAndClipPolygon(sectorVertexIndices, polygon->vertexCount);
         for (int j = 2; j < currentPolygonVertexCount2; j++) {
             al_draw_filled_triangle(
-                fixedToFloat(currentPolygonVertices2[0].x),
-                fixedToFloat(currentPolygonVertices2[0].y),
-                fixedToFloat(currentPolygonVertices2[j - 1].x),
-                fixedToFloat(currentPolygonVertices2[j - 1].y),
-                fixedToFloat(currentPolygonVertices2[j].x),
-                fixedToFloat(currentPolygonVertices2[j].y),
+                fixedToFloat(screenTransformX(currentPolygonVertices2[0].x)),
+                fixedToFloat(screenTransformY(currentPolygonVertices2[0].y)),
+                fixedToFloat(screenTransformX(currentPolygonVertices2[j - 1].x)),
+                fixedToFloat(screenTransformY(currentPolygonVertices2[j - 1].y)),
+                fixedToFloat(screenTransformX(currentPolygonVertices2[j].x)),
+                fixedToFloat(screenTransformY(currentPolygonVertices2[j].y)),
                 splitLineColor
             );
         }
@@ -383,10 +394,10 @@ void render() {
     // reset clipping
     clipperStackStart = 0;
     clipperStackEnd = 4;
-    clipperStack[0] = buildPlane2FromPoints(Vector2(fixedZero, fixedZero), Vector2(SCREEN_WIDTH_FIXED, fixedZero));
-    clipperStack[1] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH_FIXED, fixedZero), Vector2(SCREEN_WIDTH_FIXED, SCREEN_HEIGHT_FIXED));
-    clipperStack[2] = buildPlane2FromPoints(Vector2(SCREEN_WIDTH_FIXED, SCREEN_HEIGHT_FIXED), Vector2(fixedZero, SCREEN_HEIGHT_FIXED));
-    clipperStack[3] = buildPlane2FromPoints(Vector2(fixedZero, SCREEN_HEIGHT_FIXED), Vector2(fixedZero, fixedZero));
+    clipperStack[0] = buildPlane2FromPoints(Vector2(fixedMinusOne, fixedMinusOne), Vector2(fixedOne, fixedMinusOne));
+    clipperStack[1] = buildPlane2FromPoints(Vector2(fixedOne, fixedMinusOne), Vector2(fixedOne, fixedOne));
+    clipperStack[2] = buildPlane2FromPoints(Vector2(fixedOne, fixedOne), Vector2(fixedMinusOne, fixedOne));
+    clipperStack[3] = buildPlane2FromPoints(Vector2(fixedMinusOne, fixedOne), Vector2(fixedMinusOne, fixedMinusOne));
 
     // render
     renderSector(playerSectorIndex);
