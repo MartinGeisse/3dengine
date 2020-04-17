@@ -31,14 +31,6 @@ void printFixed(Fixed x) {
     printf("%f", fixedToFloat(x));
 }
 
-Fixed fixedSin(Fixed x) {
-    return floatToFixed(sinf(fixedToFloat(x)));
-}
-
-Fixed fixedCos(Fixed x) {
-    return floatToFixed(cosf(fixedToFloat(x)));
-}
-
 Fixed fixedSqrt(Fixed x) {
     return floatToFixed(sqrtf(fixedToFloat(x)));
 }

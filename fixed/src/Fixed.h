@@ -189,8 +189,6 @@ const Fixed fixedMinusEpsilon = buildFixed(-1, 65536 - 66); // 1/1000
 #endif
 
 void printFixed(Fixed x);
-Fixed fixedSin(Fixed x);
-Fixed fixedCos(Fixed x);
 Fixed fixedSqrt(Fixed x);
 Fixed floatToFixed(float x);
 float fixedToFloat(Fixed x);
