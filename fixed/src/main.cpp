@@ -12,8 +12,10 @@
 #include "engine.h"
 #include "level.h"
 
-const Fixed SPEED = buildFixed(0, 6554);
-const Fixed ROTATION = buildFixed(0, 6554);
+const Fixed SPEED = buildFixed(0, 6554); // 0.1
+const Fixed ROTATION = buildFixed(0, 6554); // 0.1
+const Fixed ROT_SIN = buildFixed(0, 6543); // sin(0.1)
+const Fixed ROT_COS = buildFixed(0, 65209); // cos(0.1)
 
 static void moveRelative(Fixed dx, Fixed dy, Fixed dz) {
     Vector3 newPosition = playerTransform.v + playerTransform.m * Vector3(dx, dy, dz);
@@ -71,43 +73,43 @@ int main() {
         }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_RIGHT)) {
             playerTransform.m *= Matrix3(
-                fixedCos(ROTATION), fixedZero, fixedSin(ROTATION),
+                ROT_COS, fixedZero, ROT_SIN,
                 fixedZero, fixedOne, fixedZero,
-                -fixedSin(ROTATION), fixedZero, fixedCos(ROTATION)
+                -ROT_SIN, fixedZero, ROT_COS
             );
         }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_LEFT)) {
             playerTransform.m *= Matrix3(
-                fixedCos(ROTATION), fixedZero, -fixedSin(ROTATION),
+                ROT_COS, fixedZero, -ROT_SIN,
                 fixedZero, fixedOne, fixedZero,
-                fixedSin(ROTATION), fixedZero, fixedCos(ROTATION)
+                ROT_SIN, fixedZero, ROT_COS
             );
         }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_UP)) {
             playerTransform.m *= Matrix3(
                 fixedOne, fixedZero, fixedZero,
-                fixedZero, fixedCos(ROTATION), -fixedSin(ROTATION),
-                fixedZero, fixedSin(ROTATION), fixedCos(ROTATION)
+                fixedZero, ROT_COS, -ROT_SIN,
+                fixedZero, ROT_SIN, ROT_COS
             );
         }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_DOWN)) {
             playerTransform.m *= Matrix3(
                 fixedOne, fixedZero, fixedZero,
-                fixedZero, fixedCos(ROTATION), fixedSin(ROTATION),
-                fixedZero, -fixedSin(ROTATION), fixedCos(ROTATION)
+                fixedZero, ROT_COS, ROT_SIN,
+                fixedZero, -ROT_SIN, ROT_COS
             );
         }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_Q)) {
             playerTransform.m *= Matrix3(
-                fixedCos(ROTATION), -fixedSin(ROTATION), fixedZero,
-                fixedSin(ROTATION), fixedCos(ROTATION), fixedZero,
+                ROT_COS, -ROT_SIN, fixedZero,
+                ROT_SIN, ROT_COS, fixedZero,
                 fixedZero, fixedZero, fixedOne
             );
         }
         if (al_key_down(&keyboardState, ALLEGRO_KEY_R)) {
             playerTransform.m *= Matrix3(
-                fixedCos(ROTATION), fixedSin(ROTATION), fixedZero,
-                -fixedSin(ROTATION), fixedCos(ROTATION), fixedZero,
+                ROT_COS, ROT_SIN, fixedZero,
+                -ROT_SIN, ROT_COS, fixedZero,
                 fixedZero, fixedZero, fixedOne
             );
         }
